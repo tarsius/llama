@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020-2021  Jonas Bernoulli
 
 ;; Authors: Jonas Bernoulli <jonas@bernoul.li>
-;; URL: https://github.com/tarsius/llama
+;; URL: https://git.sr.ht/~tarsius/llama
 ;; Keywords: extensions
 
 ;; Package-Requires: ((seq "2.20"))
