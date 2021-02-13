@@ -51,3 +51,6 @@ syntax into Emacs itself, by demonstrating that this is useful and
 that people want to use it.
 
 *Also see the [announcement](https://emacsair.me/2021/01/28/llama-0.1).*
+
+*Also see [`l`](https://git.sr.ht/~tarsius/l), my second attempt at
+faking such syntax.*
