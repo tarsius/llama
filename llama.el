@@ -77,7 +77,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl-lib))
 (require 'seq)
 
 ;;;###autoload
@@ -115,7 +114,8 @@ If you enable `llama-mode' or `global-llama-mode', then the
 above is *displayed* as:
 
   ##(foo % (bar %3) %*)"
-  (cl-check-type fn symbol)
+  (unless (symbolp fn)
+    (signal 'wrong-type-argument (list 'symbolp fn)))
   `(lambda ,(llama--arguments args)
      (,fn ,@args)))
 
@@ -124,7 +124,7 @@ above is *displayed* as:
     (llama--collect data args)
     `(,@(let ((n 0))
           (mapcar (lambda (symbol)
-                    (cl-incf n)
+                    (setq n (1+ n))
                     (or symbol (intern (format "_%%%s" n))))
                   (reverse (seq-drop-while
                             'null
