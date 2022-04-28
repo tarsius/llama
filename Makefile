@@ -5,10 +5,13 @@ PKG = llama
 ELS   = $(PKG).el
 ELCS  = $(ELS:.el=.elc)
 
+DEPS  =
+
 EMACS      ?= emacs
 EMACS_ARGS ?=
 
-LOAD_PATH  ?= -L .
+LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
+LOAD_PATH  += -L .
 
 all: lisp
 
