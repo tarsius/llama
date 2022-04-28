@@ -1,6 +1,6 @@
 ;;; llama.el --- Anonymous function literals       -*- lexical-binding: t -*-
 
-;; Copyright (C) 2020-2021  Jonas Bernoulli
+;; Copyright (C) 2020-2022  Jonas Bernoulli
 
 ;; Authors: Jonas Bernoulli <jonas@bernoul.li>
 ;; URL: https://git.sr.ht/~tarsius/llama
@@ -24,7 +24,12 @@
 
 ;;; Commentary:
 
-;; This package provides anonymous function literals for Emacs-Lisp.
+;; This package implements compact syntax for short `lambda's, without
+;; relying on a C patch to Emacs or adding an additional pair of
+;; parentheses.
+
+;; [!] I have come up with another approach that does not put anything
+;; [!] before the opening parenthesis: https://git.sr.ht/~tarsius/l.
 
 ;; Unfortunately anonymous function literals won't be added to Emacs
 ;; anytime soon.  The arguments as to why we would like to have that

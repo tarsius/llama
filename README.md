@@ -1,14 +1,23 @@
-Anonymous function literals for Emacs-Lisp
-==========================================
+Compact syntax for short lambdas.
 
-Unfortunately anonymous function literals won't be added to Emacs
-anytime soon.  The arguments as to why we would like to have that
-has been layed out convincingly but the proposal has been rejected
-anyway.
+Unfortunately compact syntax for short `lambda`s won't be added to
+Emacs anytime soon.  IMO the arguments as to why we would like to have
+that has been layed out convincingly but the proposal has been
+rejected anyway.
 
 Several packages exist that implement anonymous function literals,
 but until now they all either are waiting for a patch to the C part
 be merged into Emacs, or they depart too far from the ideal syntax.
+
+This package is another attempt.
+
+> **Update:** I have come up with a second syntax, which does not put
+> anything *before* the opening parenthesis and looks like `(l'foo %)`.
+> Unlike with my original `llama` idea I am no longer suggesting making
+> it look like some character(s) appear before the paren using font-lock
+> or similar trickery (see below).  If you so desire, then you could
+> however use `prettify-symbols-mode` to display it as e.g. `(ƒ'foo
+> %)`.  This approach is implemented in [`l`](https://git.sr.ht/~tarsius/l).
 
 In a stroke of luck I discovered a loophole that allows us to have
 almost the syntax that we want without having to convince anyone.
