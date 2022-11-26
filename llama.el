@@ -6,7 +6,7 @@
 ;; Homepage: https://git.sr.ht/~tarsius/llama
 ;; Keywords: extensions
 
-;; Package-Requires: ((seq "2.20"))
+;; Package-Requires: ((seq "2.23"))
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
