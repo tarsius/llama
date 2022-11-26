@@ -133,6 +133,16 @@ It also looks a bit like #\\='function."
     (seq-doseq (elt data)
       (llama--collect elt args)))))
 
+(defun llama--expect-function-p (fn pos)
+  (or (and (eq (char-before    pos)    ?#)
+           (eq (char-before (- pos 1)) ?#))
+      (and (eq (char-before    pos)    ?\s)
+           (eq (char-before (- pos 1)) ?#)
+           (eq (char-before (- pos 2)) ?#))
+      (funcall fn pos)))
+
+(advice-add 'elisp--expect-function-p :around #'llama--expect-function-p)
+
 ;;; _
 (provide 'llama)
 ;; Local Variables:
