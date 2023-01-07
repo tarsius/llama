@@ -1,6 +1,6 @@
 ;;; llama.el --- Compact syntax for short lambda  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2020-2022 Jonas Bernoulli
+;; Copyright (C) 2020-2023 Jonas Bernoulli
 
 ;; Authors: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://git.sr.ht/~tarsius/llama
