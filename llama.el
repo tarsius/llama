@@ -36,26 +36,34 @@
 
 ;; This `lambda' expression calls the function FN with arguments
 ;; ARGS and returns its value.  Its own arguments are derived from
-;; symbols found in ARGS.  Each symbol from `%1' through `%9', which
-;; appears in ARGS, is treated as a positional argument.  Missing
-;; arguments are named `_%N', which keeps the byte-compiler quiet.
-;; In place of `%1' the shorthand `%' can be used, but only one of
-;; these two can appear in ARGS.  `%*' represents extra `&rest'
-;; arguments.
+;; symbols found in ARGS.
+
+;; Each symbol from `%1' through `%9', which appears in ARGS,
+;; specifies an argument.  Each symbol from `&1' through `&9', which
+;; appears in ARGS, specifies an optional argument.  All arguments
+;; following an optional argument have to be optional as well, thus
+;; their names have to begin with `&'.  Symbol `&*' specifies extra
+;; (`&rest') arguments.
+
+;; Instead of `%1', the shorthand `%' can be used; but that should
+;; only be done if it is the only argument, and using both `%1' and
+;; `%' is not allowed.  Likewise `&' can be substituted for `&1'.
+;; Finally, for backward compatibility, `%*' can be used in place
+;; of `&*', but only if there are no optional arguments.
 
 ;; Instead of:
 ;;
-;;   (lambda (a _ c &rest d)
+;;   (lambda (a _ &optional c &rest d)
 ;;     (foo a (bar c) d))
 ;;
 ;; you can use this macro and write:
 ;;
-;;   (##foo % (bar %3) %*)
+;;   (##foo %1 (bar %3) %*)
 ;;
 ;; which expands to:
 ;;
-;;   (lambda (% _%2 %3 &rest %*)
-;;     (foo % (bar %3) %*))
+;;   (lambda (%1 _%2 &optional %3 &rest %*)
+;;     (foo %1 (bar %3) %*))
 
 ;; The name `##' was choosen because that allows (optionally)
 ;; omitting the whitespace between it and the following symbol.
@@ -71,26 +79,34 @@
 
 This `lambda' expression calls the function FN with arguments
 ARGS and returns its value.  Its own arguments are derived from
-symbols found in ARGS.  Each symbol from `%1' through `%9', which
-appears in ARGS, is treated as a positional argument.  Missing
-arguments are named `_%N', which keeps the byte-compiler quiet.
-In place of `%1' the shorthand `%' can be used, but only one of
-these two can appear in ARGS.  `%*' represents extra `&rest'
-arguments.
+symbols found in ARGS.
+
+Each symbol from `%1' through `%9', which appears in ARGS,
+specifies an argument.  Each symbol from `&1' through `&9', which
+appears in ARGS, specifies an optional argument.  All arguments
+following an optional argument have to be optional as well, thus
+their names have to begin with `&'.  Symbol `&*' specifies extra
+(`&rest') arguments.
+
+Instead of `%1', the shorthand `%' can be used; but that should
+only be done if it is the only argument, and using both `%1' and
+`%' is not allowed.  Likewise `&' can be substituted for `&1'.
+Finally, for backward compatibility, `%*' can be used in place
+of `&*', but only if there are no optional arguments.
 
 Instead of:
 
-  (lambda (a _ c &rest d)
+  (lambda (a _ &optional c &rest d)
     (foo a (bar c) d))
 
 you can use this macro and write:
 
-  (##foo % (bar %3) %*)
+  (##foo %1 (bar &3) &*)
 
 which expands to:
 
-  (lambda (% _%2 %3 &rest %*)
-    (foo % (bar %3) %*))
+  (lambda (%1 _%2 &optional &3 &rest %*)
+    (foo %1 (bar &3) %*))
 
 The name `##' was choosen because that allows (optionally)
 omitting the whitespace between it and the following symbol.
@@ -103,25 +119,42 @@ It also looks a bit like #\\='function."
 (defun llama--arguments (data)
   (let ((args (make-vector 10 nil)))
     (llama--collect data args)
-    `(,@(let ((n 0))
-          (mapcar (lambda (symbol)
-                    (setq n (1+ n))
-                    (or symbol (intern (format "_%%%s" n))))
-                  (reverse (seq-drop-while
-                            'null
-                            (reverse (seq-subseq args 1))))))
-      ,@(and (aref args 0) '(&rest %*)))))
+    (let ((optional nil)
+          (pos 0))
+      (apply #'nconc
+             (mapcar
+              (lambda (symbol)
+                (setq pos (1+ pos))
+                (cond
+                 ((not symbol)
+                  (list (intern (format "_%s%s" (if optional "&" "%") pos))))
+                 ((eq (aref (symbol-name symbol) 0) ?%)
+                  (cond (optional
+                         (error "%s cannot follow optional argument" symbol))
+                        ((eq symbol '%*)
+                         (list '&rest symbol))
+                        ((list symbol))))
+                 ((eq symbol '&*)
+                  (list '&rest symbol))
+                 (optional
+                  (list symbol))
+                 ((setq optional t)
+                  (list '&optional symbol))))
+              (vconcat (reverse (seq-drop-while
+                                 #'null
+                                 (reverse (seq-subseq args 1))))
+                       (and-let* ((rest (aref args 0))) (list rest))))))))
 
 (defun llama--collect (data args)
   (cond
    ((symbolp data)
     (let ((name (symbol-name data)) pos)
       (save-match-data
-        (when (string-match "\\`%\\([1-9*]\\)?\\'" name)
+        (when (string-match "\\`[%&]\\([1-9*]\\)?\\'" name)
           (setq pos (match-string 1 name))
           (setq pos (cond ((equal pos "*") 0)
                           ((not pos) 1)
-                          (t (string-to-number pos))))
+                          ((string-to-number pos))))
           (when (and (= pos 1)
                      (aref args 1)
                      (not (equal data (aref args 1))))
