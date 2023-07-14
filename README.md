@@ -44,6 +44,6 @@ which expands to:
   (foo %1 (bar &3) %*))
 ```
 
-The name `##` was choosen because that allows (optionally)
+The name `##` was chosen because that allows (optionally)
 omitting the whitespace between it and the following symbol.
 It also looks similar to `#'function`.
