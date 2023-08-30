@@ -40,8 +40,8 @@ you can use this macro and write:
 which expands to:
 
 ```elisp
-(lambda (%1 _%2 &optional &3 &rest %*)
-  (foo %1 (bar &3) %*))
+(lambda (%1 _%2 &optional &3 &rest &*)
+  (foo %1 (bar &3) &*))
 ```
 
 The name `##` was chosen because that allows (optionally)

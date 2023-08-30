@@ -58,12 +58,12 @@
 ;;
 ;; you can use this macro and write:
 ;;
-;;   (##foo %1 (bar %3) %*)
+;;   (##foo %1 (bar &3) &*)
 ;;
 ;; which expands to:
 ;;
-;;   (lambda (%1 _%2 &optional %3 &rest %*)
-;;     (foo %1 (bar %3) %*))
+;;   (lambda (%1 _%2 &optional &3 &rest &*)
+;;     (foo %1 (bar &3) &*))
 
 ;; The name `##' was chosen because that allows (optionally)
 ;; omitting the whitespace between it and the following symbol.
@@ -105,8 +105,8 @@ you can use this macro and write:
 
 which expands to:
 
-  (lambda (%1 _%2 &optional &3 &rest %*)
-    (foo %1 (bar &3) %*))
+  (lambda (%1 _%2 &optional &3 &rest &*)
+    (foo %1 (bar &3) &*))
 
 The name `##' was chosen because that allows (optionally)
 omitting the whitespace between it and the following symbol.
