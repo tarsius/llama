@@ -32,7 +32,7 @@
 ;; macro was suggested as an alternative.
 
 ;; The `##' macro, whose signature is (## FN &rest args), expands
-;; to a `lambda' expressions, which wraps around its arguments.
+;; to a `lambda' expression, which wraps around its arguments.
 
 ;; This `lambda' expression calls the function FN with arguments
 ;; ARGS and returns its value.  Its own arguments are derived from
@@ -86,7 +86,7 @@ specifies an argument.  Each symbol from `&1' through `&9', which
 appears in ARGS, specifies an optional argument.  All arguments
 following an optional argument have to be optional as well, thus
 their names have to begin with `&'.  Symbol `&*' specifies extra
-(`&rest') arguments.
+\(`&rest') arguments.
 
 Instead of `%1', the shorthand `%' can be used; but that should
 only be done if it is the only argument, and using both `%1' and
