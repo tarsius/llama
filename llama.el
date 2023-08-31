@@ -31,7 +31,7 @@
 ;; to add syntax were met with determined pushback and the use of a
 ;; macro was suggested as an alternative.
 
-;; The `##' macro, whose signature is (## FN &rest args), expands
+;; The `##' macro, whose signature is (## FN &rest ARGS), expands
 ;; to a `lambda' expression, which wraps around its arguments.
 
 ;; This `lambda' expression calls the function FN with arguments
