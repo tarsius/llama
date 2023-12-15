@@ -158,7 +158,7 @@ It also looks a bit like #\\='function."
           (when (and (= pos 1)
                      (aref args 1)
                      (not (equal data (aref args 1))))
-            (error "%% and %%1 are mutually exclusive"))
+            (error "`%s' and `%s' are mutually exclusive" data (aref args 1)))
           (aset args pos data)))))
    ((and (not (eq (car-safe data) '##))
          (or (listp data)
