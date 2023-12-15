@@ -217,6 +217,46 @@ It also looks a bit like #\\='function."
   (advice-add 'elisp-mode-syntax-propertize :override
               'llama--elisp-mode-syntax-propertize))
 
+;;; Fontification
+
+(defgroup llama ()
+  "Compact syntax for short lambda."
+  :group 'extensions
+  :group 'lisp)
+
+(defface llama-macro '((t :inherit font-lock-function-call-face))
+  "Face used for the name of the `##' macro.")
+
+(defface llama-mandatory-argument '((t :inherit font-lock-variable-use-face))
+  "Face used for mandatory arguments `%1' through `%9' and `%'.")
+
+(defface llama-optional-argument '((t :inherit font-lock-type-face))
+  "Face used for optional arguments `&1' through `&9', `&' and `&*'.")
+
+(defvar llama-font-lock-keywords
+  `(("(\\(##\\)" 1 'llama-macro)
+    ("\\_<\\(?:%[1-9]?\\)\\_>" 0 'llama-mandatory-argument)
+    ("\\_<\\(?:&[1-9*]\\)\\_>" 0 'llama-optional-argument)))
+
+(defvar llama-fontify-mode-lighter nil)
+
+;;;###autoload
+(define-minor-mode llama-fontify-mode
+  "Toggle fontification of the `##' macro and its positional arguments."
+  :lighter llama-fontify-mode-lighter
+  (if llama-fontify-mode
+      (font-lock-add-keywords  nil llama-font-lock-keywords)
+    (font-lock-remove-keywords nil llama-font-lock-keywords)))
+
+(defun llama--turn-on-fontify-mode ()
+  "Enable `llama-fontify-mode' if in an Emacs Lisp buffer."
+  (when (derived-mode-p #'emacs-lisp-mode)
+    (llama-fontify-mode)))
+
+;;;###autoload
+(define-globalized-minor-mode global-llama-fontify-mode
+  llama-fontify-mode llama--turn-on-fontify-mode)
+
 (provide 'llama)
 ;; Local Variables:
 ;; indent-tabs-mode: nil
