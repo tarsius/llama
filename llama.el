@@ -48,8 +48,6 @@
 ;; Instead of `%1', the shorthand `%' can be used; but that should
 ;; only be done if it is the only argument, and using both `%1' and
 ;; `%' is not allowed.  Likewise `&' can be substituted for `&1'.
-;; Finally, for backward compatibility, `%*' can be used in place
-;; of `&*', but only if there are no optional arguments.
 
 ;; Instead of:
 ;;
@@ -91,8 +89,6 @@ their names have to begin with `&'.  Symbol `&*' specifies extra
 Instead of `%1', the shorthand `%' can be used; but that should
 only be done if it is the only argument, and using both `%1' and
 `%' is not allowed.  Likewise `&' can be substituted for `&1'.
-Finally, for backward compatibility, `%*' can be used in place
-of `&*', but only if there are no optional arguments.
 
 Instead of:
 
@@ -129,11 +125,9 @@ It also looks a bit like #\\='function."
                  ((not symbol)
                   (list (intern (format "_%s%s" (if optional "&" "%") pos))))
                  ((eq (aref (symbol-name symbol) 0) ?%)
-                  (cond (optional
-                         (error "%s cannot follow optional argument" symbol))
-                        ((eq symbol '%*)
-                         (list '&rest symbol))
-                        ((list symbol))))
+                  (when optional
+                    (error "`%s' cannot follow optional arguments" symbol))
+                  (list symbol))
                  ((eq symbol '&*)
                   (list '&rest symbol))
                  (optional
