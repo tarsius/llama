@@ -119,7 +119,7 @@ It also looks a bit like #\\='function."
               (setq pos (1+ pos))
               (cond
                ((not symbol)
-                (list (intern (format "_%s%s" (if optional "&" "%") pos))))
+                (list (intern (format "_%c%s" (if optional ?& ?%) pos))))
                ((eq (aref (symbol-name symbol) 0) ?%)
                 (when optional
                   (error "`%s' cannot follow optional arguments" symbol))
