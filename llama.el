@@ -153,7 +153,7 @@ It also looks a bit like #\\='function."
                      (not (equal data (aref args 1))))
             (error "`%s' and `%s' are mutually exclusive" data (aref args 1)))
           (aset args pos data)))))
-   ((eq (car-safe data) '##))
+   ((memq (car-safe data) '(## quote)))
    ((listp data)
     (while (consp (cdr data))
       (llama--collect (car data) args)
