@@ -232,7 +232,7 @@ It also looks a bit like #\\='function."
   "Face used for optional arguments `&1' through `&9', `&' and `&*'.")
 
 (defvar llama-font-lock-keywords
-  `(("(\\(##\\)" 1 'llama-macro)
+  '(("(\\(##\\)" 1 'llama-macro)
     ("\\_<\\(?:%[1-9]?\\)\\_>" 0 'llama-mandatory-argument)
     ("\\_<\\(?:&[1-9*]\\)\\_>" 0 'llama-optional-argument)))
 
