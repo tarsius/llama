@@ -109,34 +109,34 @@ It also looks a bit like #\\='function."
      (,fn ,@args)))
 
 (defun llama--arguments (data)
-  (let ((args (make-vector 10 nil)))
+  (let ((args (make-vector 10 nil))
+        (optional nil)
+        (pos 0))
     (llama--collect data args)
-    (let ((optional nil)
-          (pos 0))
-      (apply #'nconc
-             (mapcar
-              (lambda (symbol)
-                (setq pos (1+ pos))
-                (cond
-                 ((not symbol)
-                  (list (intern (format "_%s%s" (if optional "&" "%") pos))))
-                 ((eq (aref (symbol-name symbol) 0) ?%)
-                  (when optional
-                    (error "`%s' cannot follow optional arguments" symbol))
-                  (list symbol))
-                 ((eq symbol '&*)
-                  (list '&rest symbol))
-                 (optional
-                  (list symbol))
-                 ((setq optional t)
-                  (list '&optional symbol))))
-              (nconc (let (symbols)
-                       (dolist (symbol (nreverse (cdr (append args nil))))
-                         (when (or symbol symbols)
-                           (push symbol symbols)))
-                       symbols)
-                     (let ((rest (aref args 0)))
-                       (and rest (list rest)))))))))
+    (apply #'nconc
+           (mapcar
+            (lambda (symbol)
+              (setq pos (1+ pos))
+              (cond
+               ((not symbol)
+                (list (intern (format "_%s%s" (if optional "&" "%") pos))))
+               ((eq (aref (symbol-name symbol) 0) ?%)
+                (when optional
+                  (error "`%s' cannot follow optional arguments" symbol))
+                (list symbol))
+               ((eq symbol '&*)
+                (list '&rest symbol))
+               (optional
+                (list symbol))
+               ((setq optional t)
+                (list '&optional symbol))))
+            (nconc (let (symbols)
+                     (dolist (symbol (nreverse (cdr (append args nil))))
+                       (when (or symbol symbols)
+                         (push symbol symbols)))
+                     symbols)
+                   (let ((rest (aref args 0)))
+                     (and rest (list rest))))))))
 
 (defun llama--collect (data args)
   (cond
