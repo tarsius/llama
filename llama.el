@@ -154,8 +154,14 @@ It also looks a bit like #\\='function."
             (error "`%s' and `%s' are mutually exclusive" data (aref args 1)))
           (aset args pos data)))))
    ((eq (car-safe data) '##))
-   ((or (listp data)
-        (vectorp data))
+   ((listp data)
+    (while (consp (cdr data))
+      (llama--collect (car data) args)
+      (setq data (cdr data)))
+    (when data
+      (llama--collect (car data) args)
+      (llama--collect (cdr data) args)))
+   ((vectorp data)
     (mapc (lambda (elt) (llama--collect elt args)) data))))
 
 ;;; Advices
