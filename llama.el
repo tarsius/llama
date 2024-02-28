@@ -135,7 +135,8 @@ It also looks a bit like #\\='function."
                          (when (or symbol symbols)
                            (push symbol symbols)))
                        symbols)
-                     (and-let* ((rest (aref args 0))) (list rest))))))))
+                     (let ((rest (aref args 0)))
+                       (and rest (list rest)))))))))
 
 (defun llama--collect (data args)
   (cond
