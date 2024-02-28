@@ -6,8 +6,6 @@
 ;; Homepage: https://git.sr.ht/~tarsius/llama
 ;; Keywords: extensions
 
-;; Package-Requires: ((seq "2.23"))
-
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software: you can redistribute it and/or modify
@@ -68,8 +66,6 @@
 ;; It also looks similar to #'function.
 
 ;;; Code:
-
-(require 'seq)
 
 ;;;###autoload
 (defmacro ## (fn &rest args)
@@ -134,10 +130,12 @@ It also looks a bit like #\\='function."
                   (list symbol))
                  ((setq optional t)
                   (list '&optional symbol))))
-              (vconcat (reverse (seq-drop-while
-                                 #'null
-                                 (reverse (seq-subseq args 1))))
-                       (and-let* ((rest (aref args 0))) (list rest))))))))
+              (nconc (let (symbols)
+                       (dolist (symbol (nreverse (cdr (append args nil))))
+                         (when (or symbol symbols)
+                           (push symbol symbols)))
+                       symbols)
+                     (and-let* ((rest (aref args 0))) (list rest))))))))
 
 (defun llama--collect (data args)
   (cond
@@ -157,8 +155,7 @@ It also looks a bit like #\\='function."
    ((and (not (eq (car-safe data) '##))
          (or (listp data)
              (vectorp data)))
-    (seq-doseq (elt data)
-      (llama--collect elt args)))))
+    (mapc (lambda (elt) (llama--collect elt args)) data))))
 
 ;;; Advices
 
