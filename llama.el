@@ -153,9 +153,9 @@ It also looks a bit like #\\='function."
                      (not (equal data (aref args 1))))
             (error "`%s' and `%s' are mutually exclusive" data (aref args 1)))
           (aset args pos data)))))
-   ((and (not (eq (car-safe data) '##))
-         (or (listp data)
-             (vectorp data)))
+   ((eq (car-safe data) '##))
+   ((or (listp data)
+        (vectorp data))
     (mapc (lambda (elt) (llama--collect elt args)) data))))
 
 ;;; Advices
