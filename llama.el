@@ -233,8 +233,8 @@ It also looks a bit like #\\='function."
 
 (defvar llama-font-lock-keywords
   '(("(\\(##\\)" 1 'llama-macro)
-    ("\\_<\\(?:%[1-9]?\\)\\_>" 0 'llama-mandatory-argument)
-    ("\\_<\\(?:&[1-9*]\\)\\_>" 0 'llama-optional-argument)))
+    ("\\_<\\(?:%[1-9]?\\)\\_>"  0 'llama-mandatory-argument)
+    ("\\_<\\(?:&[1-9*]?\\)\\_>" 0 'llama-optional-argument)))
 
 (defvar llama-fontify-mode-lighter nil)
 
