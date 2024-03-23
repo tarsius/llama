@@ -138,10 +138,10 @@ It also looks a bit like #\\='function."
                    (let ((rest (aref args 0)))
                      (and rest (list rest))))))))
 
-(defun llama--collect (data args)
+(defun llama--collect (expr args)
   (cond
-   ((symbolp data)
-    (let ((name (symbol-name data)) pos)
+   ((symbolp expr)
+    (let ((name (symbol-name expr)) pos)
       (save-match-data
         (when (string-match "\\`[%&]\\([1-9*]\\)?\\'" name)
           (setq pos (match-string 1 name))
@@ -150,19 +150,19 @@ It also looks a bit like #\\='function."
                           ((string-to-number pos))))
           (when (and (= pos 1)
                      (aref args 1)
-                     (not (equal data (aref args 1))))
-            (error "`%s' and `%s' are mutually exclusive" data (aref args 1)))
-          (aset args pos data)))))
-   ((memq (car-safe data) '(## quote)))
-   ((listp data)
-    (while (consp (cdr data))
-      (llama--collect (car data) args)
-      (setq data (cdr data)))
-    (when data
-      (llama--collect (car data) args)
-      (llama--collect (cdr data) args)))
-   ((vectorp data)
-    (mapc (lambda (elt) (llama--collect elt args)) data))))
+                     (not (equal expr (aref args 1))))
+            (error "`%s' and `%s' are mutually exclusive" expr (aref args 1)))
+          (aset args pos expr)))))
+   ((memq (car-safe expr) '(## quote)))
+   ((listp expr)
+    (while (consp (cdr expr))
+      (llama--collect (car expr) args)
+      (setq expr (cdr expr)))
+    (when expr
+      (llama--collect (car expr) args)
+      (llama--collect (cdr expr) args)))
+   ((vectorp expr)
+    (mapc (lambda (elt) (llama--collect elt args)) expr))))
 
 ;;; Advices
 
