@@ -42,6 +42,24 @@ which expands to:
   (foo %1 (bar &3) &*))
 ```
 
+Unused trailing arguments and mandatory unused arguments at the
+border between mandatory and optional arguments are also supported:
+
+```elisp
+(##list %1 _%3 &5 _&6)
+```
+
+becomes:
+
+```elisp
+(lambda (%1 _%2 _%3 &optional _&4 &5 _&6)
+  (list %1 &5))
+```
+
+Note how `_%3` and `_&6` are removed from the body, because their
+names begin with an underscore.  Also note that `_&4` is optional,
+unlike the explicitly specified `_%3`.
+
 The name `##` was chosen because that allows (optionally)
 omitting the whitespace between it and the following symbol.
 It also looks similar to `#'function`.
