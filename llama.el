@@ -107,8 +107,8 @@ It also looks a bit like #\\='function."
     (signal 'wrong-type-argument (list 'symbolp fn)))
   (let* ((args (make-vector 10 nil))
          (body (llama--collect body args))
-         (optional nil)
-         (pos 0))
+         (pos  0)
+         (opt  nil))
     `(lambda
        (,@(apply
            #'nconc
@@ -117,16 +117,16 @@ It also looks a bit like #\\='function."
               (setq pos (1+ pos))
               (cond
                ((not symbol)
-                (list (intern (format "_%c%s" (if optional ?& ?%) pos))))
+                (list (intern (format "_%c%s" (if opt ?& ?%) pos))))
                ((string-match-p "\\`_?%" (symbol-name symbol))
-                (when optional
+                (when opt
                   (error "`%s' cannot follow optional arguments" symbol))
                 (list symbol))
                ((memq symbol '(&* _&*))
                 (list '&rest symbol))
-               (optional
+               (opt
                 (list symbol))
-               ((setq optional t)
+               ((setq opt t)
                 (list '&optional symbol))))
             (nconc (let (symbols)
                      (dolist (symbol (nreverse (cdr (append args nil))))
