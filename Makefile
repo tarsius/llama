@@ -3,7 +3,11 @@
 PKG = llama
 
 ELS   = $(PKG).el
+ELS  += $(PKG)-test.el
 ELCS  = $(ELS:.el=.elc)
+
+$(PKG).elc:
+$(PKG)-test.elc: $(PKG).elc
 
 DEPS  =
 
@@ -19,6 +23,7 @@ help:
 	$(info make all          - generate byte-code and autoloads)
 	$(info make lisp         - generate byte-code and autoloads)
 	$(info make redo         - re-generate byte-code and autoloads)
+	$(info make test         - run tests)
 	$(info make clean        - remove generated files)
 	@printf "\n"
 
@@ -36,6 +41,10 @@ check-declare:
 	@printf " Checking function declarations\n"
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
 	--eval "(check-declare-directory default-directory)"
+
+test: lisp
+	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
+	-l ert -l $(PKG)-test.el -f ert-run-tests-batch-and-exit
 
 CLEAN  = $(ELCS) $(PKG)-autoloads.el
 
