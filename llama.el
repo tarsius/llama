@@ -105,26 +105,24 @@ omitting the whitespace between it and the following symbol.
 It also looks a bit like #\\='function."
   (unless (symbolp fn)
     (signal 'wrong-type-argument (list 'symbolp fn)))
-  `(lambda ,(llama--arguments body)
-     (,fn ,@body)))
-
-(defun llama--arguments (data)
-  (let ((args (make-vector 10 nil))
-        (optional nil)
-        (pos 0))
-    (llama--collect data args)
-    (apply #'nconc
+  (let* ((args (make-vector 10 nil))
+         (body (llama--collect body args))
+         (optional nil)
+         (pos 0))
+    `(lambda
+       (,@(apply
+           #'nconc
            (mapcar
             (lambda (symbol)
               (setq pos (1+ pos))
               (cond
                ((not symbol)
                 (list (intern (format "_%c%s" (if optional ?& ?%) pos))))
-               ((eq (aref (symbol-name symbol) 0) ?%)
+               ((string-match-p "\\`_?%" (symbol-name symbol))
                 (when optional
                   (error "`%s' cannot follow optional arguments" symbol))
                 (list symbol))
-               ((eq symbol '&*)
+               ((memq symbol '(&* _&*))
                 (list '&rest symbol))
                (optional
                 (list symbol))
@@ -136,15 +134,19 @@ It also looks a bit like #\\='function."
                          (push symbol symbols)))
                      symbols)
                    (let ((rest (aref args 0)))
-                     (and rest (list rest))))))))
+                     (and rest (list rest)))))))
+       (,fn ,@body))))
+
+(defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
 (defun llama--collect (expr args)
   (cond
    ((symbolp expr)
     (let ((name (symbol-name expr)))
       (save-match-data
-        (when (string-match "\\`[%&]\\([1-9*]\\)?\\'" name)
-          (let* ((pos (match-string 1 name))
+        (cond
+         ((string-match "\\`\\(_\\)?[%&]\\([1-9*]\\)?\\'" name)
+          (let* ((pos (match-string 2 name))
                  (pos (cond ((equal pos "*") 0)
                             ((not pos) 1)
                             ((string-to-number pos)))))
@@ -152,17 +154,30 @@ It also looks a bit like #\\='function."
                        (aref args 1)
                        (not (equal expr (aref args 1))))
               (error "`%s' and `%s' are mutually exclusive" expr (aref args 1)))
-            (aset args pos expr))))))
-   ((memq (car-safe expr) '(## quote)))
+            (aset args pos expr))
+          (if (match-string 1 name)
+              llama--unused-argument
+            expr))
+         (expr)))))
+   ((memq (car-safe expr) '(## quote))
+    expr)
+   ((and (listp expr) (ignore-errors (length expr)))
+    (mapcan (lambda (elt)
+              (let ((symbol (llama--collect elt args)))
+                (and (not (eq symbol llama--unused-argument))
+                     (list symbol))))
+            expr))
    ((listp expr)
     (while (consp (cdr expr))
       (llama--collect (car expr) args)
       (setq expr (cdr expr)))
     (when expr
       (llama--collect (car expr) args)
-      (llama--collect (cdr expr) args)))
+      (llama--collect (cdr expr) args))
+    expr)
    ((vectorp expr)
-    (mapc (lambda (elt) (llama--collect elt args)) expr))))
+    (vconcat (mapcar (lambda (elt) (llama--collect elt args)) expr)))
+   (expr)))
 
 ;;; Advices
 
@@ -231,10 +246,27 @@ It also looks a bit like #\\='function."
 (defface llama-optional-argument '((t :inherit font-lock-type-face))
   "Face used for optional arguments `&1' through `&9', `&' and `&*'.")
 
+(defface llama-erased-argument
+  `((((supports :box t))
+     :box ( :line-width ,(if (>= emacs-major-version 28) (cons -1 -1) -1)
+            :style nil
+            :color "red"))
+    (((supports :underline t))
+     :underline "red")
+    (t
+     :inherit font-lock-warning-face))
+  "Face used for erased arguments `_%1'...`_%9', `_&1'...`_&9' and `_&*'.
+This face is used in addition to one of llama's other argument faces.
+Unlike implicit unused arguments (which do not appear in the function
+body), these arguments are erased from the function body during macro
+expansion, and the looks of this face should hint at that.")
+
 (defvar llama-font-lock-keywords
   '(("(\\(##\\)" 1 'llama-macro)
-    ("\\_<\\(?:%[1-9]?\\)\\_>"  0 'llama-mandatory-argument)
-    ("\\_<\\(?:&[1-9*]?\\)\\_>" 0 'llama-optional-argument)))
+    ("\\_<\\(?:_?%[1-9]?\\)\\_>"  0 'llama-mandatory-argument)
+    ("\\_<\\(?:_?&[1-9*]?\\)\\_>" 0 'llama-optional-argument)
+    ("\\_<\\(?:_\\(?:%[1-9]?\\|&[1-9*]?\\)\\)\\_>"
+     0 'llama-erased-argument prepend)))
 
 (defvar llama-fontify-mode-lighter nil)
 
