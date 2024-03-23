@@ -112,14 +112,20 @@ It also looks a bit like #\\='function."
          (args (progn (while (and args (null (car args)))
                         (setq args (cdr args)))
                       args))
-         (pos  0)
+         (pos  (length args))
+         (opt  nil)
+         (args (mapcar
+                (lambda (arg)
+                  (if arg
+                      (setq opt (string-match-p "\\`_?&" (symbol-name arg)))
+                    (setq arg (intern (format "_%c%s" (if opt ?& ?%) pos))))
+                  (setq pos (1- pos))
+                  arg)
+                args))
          (opt  nil)
          (args (mapcar
                 (lambda (symbol)
-                  (setq pos (1+ pos))
                   (cond
-                   ((not symbol)
-                    (list (intern (format "_%c%s" (if opt ?& ?%) pos))))
                    ((string-match-p "\\`_?%" (symbol-name symbol))
                     (when opt
                       (error "`%s' cannot follow optional arguments" symbol))
