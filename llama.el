@@ -29,16 +29,16 @@
 ;; to add syntax were met with determined pushback and the use of a
 ;; macro was suggested as an alternative.
 
-;; The `##' macro, whose signature is (## FN &rest ARGS), expands
-;; to a `lambda' expression, which wraps around its arguments.
+;; The `##' macro, whose signature is (## FN &rest BODY), expands
+;; to a `lambda' expression, which wraps around these arguments.
 
 ;; This `lambda' expression calls the function FN with arguments
-;; ARGS and returns its value.  Its own arguments are derived from
+;; BODY and returns its value.  Its own arguments are derived from
 ;; symbols found in ARGS.
 
-;; Each symbol from `%1' through `%9', which appears in ARGS,
+;; Each symbol from `%1' through `%9', which appears in BODY,
 ;; specifies an argument.  Each symbol from `&1' through `&9', which
-;; appears in ARGS, specifies an optional argument.  All arguments
+;; appears in BODY, specifies an optional argument.  All arguments
 ;; following an optional argument have to be optional as well, thus
 ;; their names have to begin with `&'.  Symbol `&*' specifies extra
 ;; (`&rest') arguments.
@@ -68,16 +68,16 @@
 ;;; Code:
 
 ;;;###autoload
-(defmacro ## (fn &rest args)
-    "Expand to a `lambda' expression that wraps around FN and ARGS.
+(defmacro ## (fn &rest body)
+    "Expand to a `lambda' expression that wraps around FN and BODY.
 
 This `lambda' expression calls the function FN with arguments
-ARGS and returns its value.  Its own arguments are derived from
-symbols found in ARGS.
+BODY and returns its value.  Its own arguments are derived from
+symbols found in BODY.
 
-Each symbol from `%1' through `%9', which appears in ARGS,
+Each symbol from `%1' through `%9', which appears in BODY,
 specifies an argument.  Each symbol from `&1' through `&9', which
-appears in ARGS, specifies an optional argument.  All arguments
+appears in BODY, specifies an optional argument.  All arguments
 following an optional argument have to be optional as well, thus
 their names have to begin with `&'.  Symbol `&*' specifies extra
 \(`&rest') arguments.
@@ -105,8 +105,8 @@ omitting the whitespace between it and the following symbol.
 It also looks a bit like #\\='function."
   (unless (symbolp fn)
     (signal 'wrong-type-argument (list 'symbolp fn)))
-  `(lambda ,(llama--arguments args)
-     (,fn ,@args)))
+  `(lambda ,(llama--arguments body)
+     (,fn ,@body)))
 
 (defun llama--arguments (data)
   (let ((args (make-vector 10 nil))
