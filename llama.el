@@ -109,30 +109,30 @@ It also looks a bit like #\\='function."
          (body (llama--collect body args))
          (rest (aref args 0))
          (args (nreverse (cdr (append args nil))))
+         (args (let (symbols)
+                 (dolist (symbol args)
+                   (when (or symbol symbols)
+                     (push symbol symbols)))
+                 symbols))
          (pos  0)
-         (opt  nil))
+         (opt  nil)
+         (args (mapcar
+                (lambda (symbol)
+                  (setq pos (1+ pos))
+                  (cond
+                   ((not symbol)
+                    (list (intern (format "_%c%s" (if opt ?& ?%) pos))))
+                   ((string-match-p "\\`_?%" (symbol-name symbol))
+                    (when opt
+                      (error "`%s' cannot follow optional arguments" symbol))
+                    (list symbol))
+                   (opt
+                    (list symbol))
+                   ((setq opt t)
+                    (list '&optional symbol))))
+                args)))
     `(lambda
-       (,@(apply
-           #'nconc
-           (mapcar
-            (lambda (symbol)
-              (setq pos (1+ pos))
-              (cond
-               ((not symbol)
-                (list (intern (format "_%c%s" (if opt ?& ?%) pos))))
-               ((string-match-p "\\`_?%" (symbol-name symbol))
-                (when opt
-                  (error "`%s' cannot follow optional arguments" symbol))
-                (list symbol))
-               (opt
-                (list symbol))
-               ((setq opt t)
-                (list '&optional symbol))))
-            (let (symbols)
-              (dolist (symbol args)
-                (when (or symbol symbols)
-                  (push symbol symbols)))
-              symbols)))
+       (,@(apply #'nconc args)
         ,@(and rest (list '&rest rest)))
        (,fn ,@body))))
 
