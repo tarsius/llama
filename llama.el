@@ -109,11 +109,9 @@ It also looks a bit like #\\='function."
          (body (llama--collect body args))
          (rest (aref args 0))
          (args (nreverse (cdr (append args nil))))
-         (args (let (symbols)
-                 (dolist (symbol args)
-                   (when (or symbol symbols)
-                     (push symbol symbols)))
-                 symbols))
+         (args (progn (while (and args (null (car args)))
+                        (setq args (cdr args)))
+                      args))
          (pos  0)
          (opt  nil)
          (args (mapcar
@@ -130,7 +128,7 @@ It also looks a bit like #\\='function."
                     (list symbol))
                    ((setq opt t)
                     (list '&optional symbol))))
-                args)))
+                (nreverse args))))
     `(lambda
        (,@(apply #'nconc args)
         ,@(and rest (list '&rest rest)))
