@@ -279,8 +279,8 @@ It also looks a bit like #\\='function."
 (defface llama-erased-argument
   `((((supports :box t))
      :box ( :line-width ,(if (>= emacs-major-version 28) (cons -1 -1) -1)
-            :style nil
-            :color "red"))
+            :color "red"
+            :style nil))
     (((supports :underline t))
      :underline "red")
     (t
