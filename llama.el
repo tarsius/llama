@@ -276,7 +276,7 @@ It also looks a bit like #\\='function."
 (defface llama-optional-argument '((t :inherit font-lock-type-face))
   "Face used for optional arguments `&1' through `&9', `&' and `&*'.")
 
-(defface llama-erased-argument
+(defface llama-deleted-argument
   `((((supports :box t))
      :box ( :line-width ,(if (>= emacs-major-version 28) (cons -1 -1) -1)
             :color "red"
@@ -285,10 +285,10 @@ It also looks a bit like #\\='function."
      :underline "red")
     (t
      :inherit font-lock-warning-face))
-  "Face used for erased arguments `_%1'...`_%9', `_&1'...`_&9' and `_&*'.
+  "Face used for deleted arguments `_%1'...`_%9', `_&1'...`_&9' and `_&*'.
 This face is used in addition to one of llama's other argument faces.
 Unlike implicit unused arguments (which do not appear in the function
-body), these arguments are erased from the function body during macro
+body), these arguments are deleted from the function body during macro
 expansion, and the looks of this face should hint at that.")
 
 (defvar llama-font-lock-keywords
@@ -296,7 +296,7 @@ expansion, and the looks of this face should hint at that.")
     ("\\_<\\(?:_?%[1-9]?\\)\\_>"  0 'llama-mandatory-argument)
     ("\\_<\\(?:_?&[1-9*]?\\)\\_>" 0 'llama-optional-argument)
     ("\\_<\\(?:_\\(?:%[1-9]?\\|&[1-9*]?\\)\\)\\_>"
-     0 'llama-erased-argument prepend)))
+     0 'llama-deleted-argument prepend)))
 
 (defvar llama-fontify-mode-lighter nil)
 
