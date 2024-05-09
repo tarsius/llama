@@ -82,8 +82,8 @@
 ;;; Code:
 
 ;;;###autoload
-(defmacro ## (fn &rest body)
-    "Expand to a `lambda' expression that wraps around FN and BODY.
+(defmacro llama (fn &rest body)
+  "Expand to a `lambda' expression that wraps around FN and BODY.
 
 This `lambda' expression calls the function FN with arguments
 BODY and returns its value.  Its own arguments are derived from
@@ -128,9 +128,10 @@ Note how `_%3' and `_&6' are removed from the body, because their
 names begin with an underscore.  Also note that `_&4' is optional,
 unlike the explicitly specified `_%3'.
 
-The name `##' was chosen because that allows (optionally)
-omitting the whitespace between it and the following symbol.
-It also looks a bit like #\\='function."
+The name `##' was chosen because that allows (optionally) omitting
+the whitespace between it and the following symbol.  If you dislike
+this trickery, you can alternatively use this macro under the name
+`llama'."
   (unless (symbolp fn)
     (signal 'wrong-type-argument (list 'symbolp fn)))
   (let* ((args (make-vector 10 nil))
@@ -167,6 +168,8 @@ It also looks a bit like #\\='function."
        (,@(apply #'nconc args)
         ,@(and rest (list '&rest rest)))
        (,fn ,@body))))
+
+(defalias '## 'llama)
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
@@ -259,6 +262,39 @@ It also looks a bit like #\\='function."
        start end)))
   (advice-add 'elisp-mode-syntax-propertize :override
               'llama--elisp-mode-syntax-propertize))
+
+(defun llama--suspend-empty-symbol-from-collection (fn &rest args)
+  "Unintern the symbol with the empty name during completion.
+
+`##' is the notation for the symbol whose name is the empty string.
+  (intern \"\") => ##
+  (symbol-name \\='##) => \"\"
+
+The `llama' package uses `##' as the name of a macro, which allows
+it to be used akin to syntax, without actually being new syntax.
+(`describe-function' won't let you select `##', but because that is an
+alias for `llama', you can access the documentation under that name.)
+
+This advice prevents the empty string from being offered as a completion
+candidate when `obarray' (or a completion table that internally uses
+that) is used as COLLECTION, by `unintern'ing that symbol temporarily."
+  (let ((plist (symbol-plist '##))
+        (value nil)
+        (bound nil))
+    (with-no-warnings
+      (when (boundp '##)
+        (setq bound t)
+        (setq value ##)))
+    (unwind-protect
+        (progn (unintern "" obarray)
+               (apply fn args))
+      (defalias (intern "") 'llama)
+      (setplist (intern "") plist)
+      (when bound
+        (set (intern "") value)))))
+
+(advice-add 'completing-read :around
+            #'llama--suspend-empty-symbol-from-collection)
 
 ;;; Fontification
 
