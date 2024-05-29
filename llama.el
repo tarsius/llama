@@ -169,7 +169,7 @@ this trickery, you can alternatively use this macro under the name
         ,@(and rest (list '&rest rest)))
        (,fn ,@body))))
 
-(defalias '## 'llama)
+(defalias (quote ##) 'llama)
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
