@@ -215,6 +215,7 @@ this trickery, you can alternatively use this macro under the name
 ;;; Advices
 
 (define-advice elisp--expect-function-p (:around (fn pos) llama)
+  "Support function completion directly following `##'."
   (or (and (eq (char-before    pos)    ?#)
            (eq (char-before (- pos 1)) ?#))
       (and (eq (char-before    pos)    ?\s)
