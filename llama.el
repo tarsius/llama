@@ -214,7 +214,7 @@ this trickery, you can alternatively use this macro under the name
 
 ;;; Advices
 
-(defun llama--expect-function-p (fn pos)
+(define-advice elisp--expect-function-p (:around (fn pos) llama)
   (or (and (eq (char-before    pos)    ?#)
            (eq (char-before (- pos 1)) ?#))
       (and (eq (char-before    pos)    ?\s)
@@ -222,11 +222,9 @@ this trickery, you can alternatively use this macro under the name
            (eq (char-before (- pos 2)) ?#))
       (funcall fn pos)))
 
-(advice-add 'elisp--expect-function-p :around #'llama--expect-function-p)
-
 (when (eval (fboundp 'elisp-mode-syntax-propertize) t)
   ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
-  (defun llama--elisp-mode-syntax-propertize (start end)
+  (define-advice elisp-mode-syntax-propertize (:override (start end) llama)
     "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
     (goto-char start)
     (let ((case-fold-search nil))
@@ -259,11 +257,9 @@ this trickery, you can alternatively use this macro under the name
                      (seq (group-n 1 (+ "^")) "[")))     ; Char-table.
          (1 (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
               (string-to-syntax "'")))))
-       start end)))
-  (advice-add 'elisp-mode-syntax-propertize :override
-              'llama--elisp-mode-syntax-propertize))
+       start end))))
 
-(defun llama--suspend-empty-symbol-from-collection (fn &rest args)
+(define-advice completing-read (:around (fn &rest args) llama)
   "Unintern the symbol with the empty name during completion.
 
 `##' is the notation for the symbol whose name is the empty string.
@@ -292,9 +288,6 @@ that) is used as COLLECTION, by `unintern'ing that symbol temporarily."
       (setplist (intern "") plist)
       (when bound
         (set (intern "") value)))))
-
-(advice-add 'completing-read :around
-            #'llama--suspend-empty-symbol-from-collection)
 
 ;;; Fontification
 
