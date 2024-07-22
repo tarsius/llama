@@ -223,42 +223,41 @@ this trickery, you can alternatively use this macro under the name
            (eq (char-before (- pos 2)) ?#))
       (funcall fn pos)))
 
-(when (eval (fboundp 'elisp-mode-syntax-propertize) t)
+(define-advice elisp-mode-syntax-propertize (:override (start end) llama)
   ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
-  (define-advice elisp-mode-syntax-propertize (:override (start end) llama)
-    "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
-    (goto-char start)
-    (let ((case-fold-search nil))
-      (funcall
-       (syntax-propertize-rules
-        ;; Empty symbol.
-        ;; {{ Comment out to prevent the `##' from becoming part of
-        ;;    the following symbol when there is no space in between.
-        ;; ("##" (0 (unless (nth 8 (syntax-ppss))
-        ;;            (string-to-syntax "_"))))
-        ;; }}
-        ;; {{ As for other symbols, use `font-lock-constant-face' in
-        ;;    docstrings and comments.
-        ("##" (0 (when (nth 8 (syntax-ppss))
-                   (string-to-syntax "_"))))
-        ;; }}
-        ;; Prevent the @ from becoming part of a following symbol.
-        ;; {{ Preserve this part, even though it is absent from
-        ;;    this function in 29.1; backporting it by association.
-        (",@" (0 (unless (nth 8 (syntax-ppss))
-                   (string-to-syntax "'"))))
-        ;; }}
-        ;; Unicode character names.  (The longest name is 88 characters
-        ;; long.)
-        ("\\?\\\\N{[-A-Za-z0-9 ]\\{,100\\}}"
-         (0 (unless (nth 8 (syntax-ppss))
-              (string-to-syntax "_"))))
-        ((rx "#" (or (seq (group-n 1 "&" (+ digit)) ?\") ; Bool-vector.
-                     (seq (group-n 1 "s") "(")           ; Record.
-                     (seq (group-n 1 (+ "^")) "[")))     ; Char-table.
-         (1 (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
-              (string-to-syntax "'")))))
-       start end))))
+  "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
+  (goto-char start)
+  (let ((case-fold-search nil))
+    (funcall
+     (syntax-propertize-rules
+      ;; Empty symbol.
+      ;; {{ Comment out to prevent the `##' from becoming part of
+      ;;    the following symbol when there is no space in between.
+      ;; ("##" (0 (unless (nth 8 (syntax-ppss))
+      ;;            (string-to-syntax "_"))))
+      ;; }}
+      ;; {{ As for other symbols, use `font-lock-constant-face' in
+      ;;    docstrings and comments.
+      ("##" (0 (when (nth 8 (syntax-ppss))
+                 (string-to-syntax "_"))))
+      ;; }}
+      ;; Prevent the @ from becoming part of a following symbol.
+      ;; {{ Preserve this part, even though it is absent from
+      ;;    this function in 29.1; backporting it by association.
+      (",@" (0 (unless (nth 8 (syntax-ppss))
+                 (string-to-syntax "'"))))
+      ;; }}
+      ;; Unicode character names.  (The longest name is 88 characters
+      ;; long.)
+      ("\\?\\\\N{[-A-Za-z0-9 ]\\{,100\\}}"
+       (0 (unless (nth 8 (syntax-ppss))
+            (string-to-syntax "_"))))
+      ((rx "#" (or (seq (group-n 1 "&" (+ digit)) ?\") ; Bool-vector.
+                   (seq (group-n 1 "s") "(")           ; Record.
+                   (seq (group-n 1 (+ "^")) "[")))     ; Char-table.
+       (1 (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
+            (string-to-syntax "'")))))
+     start end)))
 
 (define-advice completing-read (:around (fn &rest args) llama)
   "Unintern the symbol with the empty name during completion.
