@@ -7,7 +7,7 @@
 ;; Keywords: extensions
 
 ;; Package-Version: 0
-;; Package-Requires: (("emacs" "26.1"))
+;; Package-Requires: ((emacs "26.1"))
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
