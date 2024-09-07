@@ -203,13 +203,13 @@ this trickery, you can alternatively use this macro under the name
                      (list symbol))))
             expr))
    ((listp expr)
-    (while (consp (cdr expr))
-      (llama--collect (car expr) args)
-      (setq expr (cdr expr)))
-    (when expr
-      (llama--collect (car expr) args)
-      (llama--collect (cdr expr) args))
-    expr)
+    (prog1 expr
+      (while (consp (cdr expr))
+        (llama--collect (car expr) args)
+        (setq expr (cdr expr)))
+      (when expr
+        (llama--collect (car expr) args)
+        (llama--collect (cdr expr) args))))
    ((vectorp expr)
     (vconcat (mapcar (lambda (elt) (llama--collect elt args)) expr)))
    (expr)))
