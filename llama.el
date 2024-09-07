@@ -198,9 +198,9 @@ this trickery, you can alternatively use this macro under the name
     expr)
    ((and (listp expr) (ignore-errors (length expr)))
     (mapcan (lambda (elt)
-              (let ((symbol (llama--collect elt args)))
-                (and (not (eq symbol llama--unused-argument))
-                     (list symbol))))
+              (setq elt (llama--collect elt args))
+              (and (not (eq elt llama--unused-argument))
+                   (list elt)))
             expr))
    ((listp expr)
     (prog1 expr
