@@ -277,6 +277,29 @@
                    (list  %2 %                 &4 &3))))
   )
 
+(ert-deftest llama-test-501-function-position nil
+
+  (should (equal (##+ (% %2 2) %1)
+                 (lambda (%1 %2)
+                   (+ (% %2 2) %1))))
+
+  (should (equal (##+ (* %2 2) %)
+                 (lambda (% %2)
+                   (+ (* %2 2) %))))
+
+  (should (equal (##% %2 2)
+                 (lambda (_%1 %2)
+                   (% %2 2))))
+
+  (should (equal (##* %1 2)
+                 (lambda (%1)
+                   (* %1 2))))
+
+  (should (equal (##% %2 %1)
+                 (lambda (%1 %2)
+                   (% %2 %1))))
+  )
+
 (ert-deftest llama-test-901-errors-first nil
   (should-error (##list  %1   &1))
   (should-error (##list  &1   %1))

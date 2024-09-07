@@ -48,6 +48,7 @@
 ;; Instead of `%1', the shorthand `%' can be used; but that should
 ;; only be done if it is the only argument, and using both `%1' and
 ;; `%' is not allowed.  Likewise `&' can be substituted for `&1'.
+;; Both shorthands cannot be used in function position.
 
 ;; Instead of:
 ;;
@@ -137,7 +138,7 @@ this trickery, you can alternatively use this macro under the name
   (unless (symbolp fn)
     (signal 'wrong-type-argument (list 'symbolp fn)))
   (let* ((args (make-vector 10 nil))
-         (body (llama--collect body args))
+         (body (cdr (llama--collect (cons fn body) args)))
          (rest (aref args 0))
          (args (nreverse (cdr (append args nil))))
          (args (progn (while (and args (null (car args)))
@@ -175,7 +176,7 @@ this trickery, you can alternatively use this macro under the name
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
-(defun llama--collect (expr args)
+(defun llama--collect (expr args &optional fnpos)
   (cond
    ((symbolp expr)
     (let ((name (symbol-name expr)))
@@ -187,9 +188,10 @@ this trickery, you can alternatively use this macro under the name
                             ((not pos) 1)
                             ((string-to-number pos))))
                  (sym (aref args pos)))
-            (when (and sym (not (equal expr sym)))
-              (error "`%s' and `%s' are mutually exclusive" expr sym))
-            (aset args pos expr))
+            (unless (and fnpos (memq expr '(% &)))
+              (when (and sym (not (equal expr sym)))
+                (error "`%s' and `%s' are mutually exclusive" expr sym))
+              (aset args pos expr)))
           (if (match-string 1 name)
               llama--unused-argument
             expr))
@@ -197,11 +199,13 @@ this trickery, you can alternatively use this macro under the name
    ((memq (car-safe expr) '(## quote))
     expr)
    ((and (listp expr) (ignore-errors (length expr)))
-    (mapcan (lambda (elt)
-              (setq elt (llama--collect elt args))
-              (and (not (eq elt llama--unused-argument))
-                   (list elt)))
-            expr))
+    (let ((fnpos t))
+      (mapcan (lambda (elt)
+                (setq elt (llama--collect elt args fnpos))
+                (setq fnpos nil)
+                (and (not (eq elt llama--unused-argument))
+                     (list elt)))
+              expr)))
    ((listp expr)
     (prog1 expr
       (while (consp (cdr expr))
