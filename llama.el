@@ -135,42 +135,44 @@ The name `##' was chosen because that allows (optionally) omitting
 the whitespace between it and the following symbol.  If you dislike
 this trickery, you can alternatively use this macro under the name
 `llama'."
-  (unless (symbolp fn)
-    (signal 'wrong-type-argument (list 'symbolp fn)))
-  (let* ((args (make-vector 10 nil))
-         (body (cdr (llama--collect (cons fn body) args)))
-         (rest (aref args 0))
-         (args (nreverse (cdr (append args nil))))
-         (args (progn (while (and args (null (car args)))
-                        (setq args (cdr args)))
-                      args))
-         (pos  (length args))
-         (opt  nil)
-         (args (mapcar
-                (lambda (arg)
-                  (if arg
-                      (setq opt (string-match-p "\\`_?&" (symbol-name arg)))
-                    (setq arg (intern (format "_%c%s" (if opt ?& ?%) pos))))
-                  (setq pos (1- pos))
-                  arg)
-                args))
-         (opt  nil)
-         (args (mapcar
-                (lambda (symbol)
-                  (cond
-                   ((string-match-p "\\`_?%" (symbol-name symbol))
-                    (when opt
-                      (error "`%s' cannot follow optional arguments" symbol))
-                    (list symbol))
-                   (opt
-                    (list symbol))
-                   ((setq opt t)
-                    (list '&optional symbol))))
-                (nreverse args))))
-    `(lambda
-       (,@(apply #'nconc args)
-        ,@(and rest (list '&rest rest)))
-       (,fn ,@body))))
+  (if (proper-list-p fn)
+      `(lambda ,fn ,@body)
+    (unless (symbolp fn)
+      (signal 'wrong-type-argument (list 'symbolp fn)))
+    (let* ((args (make-vector 10 nil))
+           (body (llama--collect body args))
+           (rest (aref args 0))
+           (args (nreverse (cdr (append args nil))))
+           (args (progn (while (and args (null (car args)))
+                          (setq args (cdr args)))
+                        args))
+           (pos  (length args))
+           (opt  nil)
+           (args (mapcar
+                  (lambda (arg)
+                    (if arg
+                        (setq opt (string-match-p "\\`_?&" (symbol-name arg)))
+                      (setq arg (intern (format "_%c%s" (if opt ?& ?%) pos))))
+                    (setq pos (1- pos))
+                    arg)
+                  args))
+           (opt  nil)
+           (args (mapcar
+                  (lambda (symbol)
+                    (cond
+                     ((string-match-p "\\`_?%" (symbol-name symbol))
+                      (when opt
+                        (error "`%s' cannot follow optional arguments" symbol))
+                      (list symbol))
+                     (opt
+                      (list symbol))
+                     ((setq opt t)
+                      (list '&optional symbol))))
+                  (nreverse args))))
+      `(lambda
+         (,@(apply #'nconc args)
+          ,@(and rest (list '&rest rest)))
+         (,fn ,@body)))))
 
 (defalias (quote ##) 'llama)
 
