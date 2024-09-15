@@ -190,7 +190,7 @@ this trickery, you can alternatively use this macro under the name
                  (sym (aref args pos)))
             (unless (and fnpos (memq expr '(% &)))
               (when (and sym (not (equal expr sym)))
-                (error "`%s' and `%s' are mutually exclusive" expr sym))
+                (error "`%s' and `%s' are mutually exclusive" sym expr))
               (aset args pos expr)))
           (if (match-string 1 name)
               llama--unused-argument
