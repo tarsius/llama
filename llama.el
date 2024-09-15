@@ -178,6 +178,7 @@ this trickery, you can alternatively use this macro under the name
 
 (defun llama--collect (expr args &optional fnpos)
   (cond
+   ((memq (car-safe expr) '(## quote)) expr)
    ((symbolp expr)
     (let ((name (symbol-name expr)))
       (save-match-data
@@ -196,8 +197,6 @@ this trickery, you can alternatively use this macro under the name
               llama--unused-argument
             expr))
          (expr)))))
-   ((memq (car-safe expr) '(## quote))
-    expr)
    ((or (listp expr)
         (vectorp expr))
     (let* ((vectorp (vectorp expr))
