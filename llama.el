@@ -176,9 +176,16 @@ this trickery, you can alternatively use this macro under the name
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
-(defun llama--collect (expr args &optional fnpos)
+(defun llama--collect (expr args &optional fnpos backquoted)
   (cond
    ((memq (car-safe expr) '(## quote)) expr)
+   ((and backquoted (symbolp expr)) expr)
+   ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
+    (cons backquote-unquote-symbol
+          (llama--collect (cdr expr) args)))
+   ((eq (car-safe expr) backquote-backquote-symbol)
+    (cons backquote-backquote-symbol
+          (llama--collect (cdr expr) args nil t)))
    ((symbolp expr)
     (let ((name (symbol-name expr)))
       (save-match-data
@@ -202,20 +209,23 @@ this trickery, you can alternatively use this macro under the name
     (let* ((vectorp (vectorp expr))
            (expr (if vectorp (append expr ()) expr))
            (fnpos (and (not vectorp)
+                       (not backquoted)
                        (ignore-errors (length expr)))) ;proper-list-p
            (ret ()))
       (catch t
         (while t
-          (let ((elt (llama--collect (car expr) args fnpos)))
+          (let ((elt (llama--collect (car expr) args fnpos backquoted)))
             (unless (eq elt llama--unused-argument)
               (push elt ret)))
           (setq fnpos nil)
           (setq expr (cdr expr))
-          (unless (and expr (listp expr))
+          (unless (and expr
+                       (listp expr)
+                       (not (eq (car expr) backquote-unquote-symbol)))
             (throw t nil))))
       (setq ret (nreverse ret))
       (when expr
-        (setcdr (last ret) (llama--collect expr args)))
+        (setcdr (last ret) (llama--collect expr args nil backquoted)))
       (if vectorp (vconcat ret) ret)))
    (expr)))
 

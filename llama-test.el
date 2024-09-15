@@ -355,6 +355,17 @@
                    (cons %1 '(%2)))))
   )
 
+(ert-deftest llama-test-504-backquoted nil
+
+  (should (equal (##list `(,%1 %2 ,%3))
+                 (lambda (%1 _%2 %3)
+                   (list `(,%1 %2 ,%3)))))
+
+  (should (equal (##list `(,%1 %2 (,%3) ,%4 . ,%5))
+                 (lambda (%1 _%2 %3 %4 %5)
+                   (list `(,%1 %2 (,%3) ,%4 . ,%5)))))
+  )
+
 (ert-deftest llama-test-901-errors-first nil
   (should-error (##list  %1   &1))
   (should-error (##list  &1   %1))
