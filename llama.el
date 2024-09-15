@@ -344,10 +344,21 @@ expansion, and the looks of this face should hint at that.")
 
 (defvar llama-font-lock-keywords
   '(("(\\(##\\)" 1 'llama-macro)
-    ("\\_<\\(?:_?%[1-9]?\\)\\_>"  0 'llama-mandatory-argument)
-    ("\\_<\\(?:_?&[1-9*]?\\)\\_>" 0 'llama-optional-argument)
+    ("\\_<\\(?:_?%[1-9]?\\)\\_>"
+     0 (llama--maybe-face 'llama-mandatory-argument))
+    ("\\_<\\(?:_?&[1-9*]?\\)\\_>"
+     0 (llama--maybe-face 'llama-optional-argument))
     ("\\_<\\(?:_\\(?:%[1-9]?\\|&[1-9*]?\\)\\)\\_>"
      0 'llama-deleted-argument prepend)))
+
+(defun llama--maybe-face (face)
+  (and (not (and (member (match-string 0) '("%" "&"))
+                 (and-let* ((beg (ignore-errors
+                                   (scan-lists (match-beginning 0) -1 1))))
+                   (string-match-p "\\`\\(##\\)?[ \t\n\r]*\\'"
+                                   (buffer-substring-no-properties
+                                    (1+ beg) (match-beginning 0))))))
+       face))
 
 (defvar llama-fontify-mode-lighter nil)
 
