@@ -364,6 +364,14 @@
   (should (equal (##list `(,%1 %2 (,%3) ,%4 . ,%5))
                  (lambda (%1 _%2 %3 %4 %5)
                    (list `(,%1 %2 (,%3) ,%4 . ,%5)))))
+
+  (should (equal (##`(,%1 %2 ,%3))
+                 (lambda (%1 _%2 %3)
+                   `(,%1 %2 ,%3))))
+
+  (should (equal (##`(,%1 %2 (,%3) ,%4 . ,%5))
+                 (lambda (%1 _%2 %3 %4 %5)
+                   `(,%1 %2 (,%3) ,%4 . ,%5))))
   )
 
 (ert-deftest llama-test-901-errors-first nil

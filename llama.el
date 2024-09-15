@@ -135,8 +135,13 @@ The name `##' was chosen because that allows (optionally) omitting
 the whitespace between it and the following symbol.  If you dislike
 this trickery, you can alternatively use this macro under the name
 `llama'."
-  (unless (symbolp fn)
-    (signal 'wrong-type-argument (list 'symbolp fn)))
+  (cond ((symbolp fn))
+        ((and (eq (car-safe fn) backquote-backquote-symbol)
+              (not body))
+         (setq body (cdr fn))
+         (setq fn backquote-backquote-symbol))
+        ((signal 'wrong-type-argument
+                 (list 'symbolp backquote-backquote-symbol fn))))
   (let* ((args (make-vector 10 nil))
          (body (cdr (llama--collect (cons fn body) args)))
          (rest (aref args 0))
