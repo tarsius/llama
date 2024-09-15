@@ -198,24 +198,26 @@ this trickery, you can alternatively use this macro under the name
          (expr)))))
    ((memq (car-safe expr) '(## quote))
     expr)
-   ((and (listp expr) (ignore-errors (length expr)))
-    (let ((fnpos t))
-      (mapcan (lambda (elt)
-                (setq elt (llama--collect elt args fnpos))
-                (setq fnpos nil)
-                (and (not (eq elt llama--unused-argument))
-                     (list elt)))
-              expr)))
-   ((listp expr)
-    (prog1 expr
-      (while (consp (cdr expr))
-        (llama--collect (car expr) args)
-        (setq expr (cdr expr)))
+   ((or (listp expr)
+        (vectorp expr))
+    (let* ((vectorp (vectorp expr))
+           (expr (if vectorp (append expr ()) expr))
+           (fnpos (and (not vectorp)
+                       (ignore-errors (length expr)))) ;proper-list-p
+           (ret ()))
+      (catch t
+        (while t
+          (let ((elt (llama--collect (car expr) args fnpos)))
+            (unless (eq elt llama--unused-argument)
+              (push elt ret)))
+          (setq fnpos nil)
+          (setq expr (cdr expr))
+          (unless (and expr (listp expr))
+            (throw t nil))))
+      (setq ret (nreverse ret))
       (when expr
-        (llama--collect (car expr) args)
-        (llama--collect (cdr expr) args))))
-   ((vectorp expr)
-    (vconcat (mapcar (lambda (elt) (llama--collect elt args)) expr)))
+        (setcdr (last ret) (llama--collect expr args)))
+      (if vectorp (vconcat ret) ret)))
    (expr)))
 
 ;;; Advices

@@ -311,7 +311,6 @@
     (cons 'list (nreverse body))))
 
 (ert-deftest llama-test-502-vector nil
-  :expected-result :failed
 
   ;; Real world example: (##-let [val %1] ...).
 
@@ -324,15 +323,11 @@
                    (llama-test--flatten [%2 [%1]]))))
 
   (should (equal (##llama-test--flatten [%1 _%2 %3])
-                 ;; failure:
-                 ;; (lambda (%1 _%2 %3)
-                 ;;   (llama-test--flatten [%1 llama--unused-argument %3]))
                  (lambda (%1 _%2 %3)
                    (llama-test--flatten [%1 %3]))))
   )
 
 (ert-deftest llama-test-502-dotted nil
-  :expected-result :failed
 
   ;; Real world example: ???.
 
@@ -345,16 +340,10 @@
                    (llama-test--flatten (%1 %2 . %3)))))
 
   (should (equal (##llama-test--flatten (%1 _%2 . %3))
-                 ;; failure:
-                 ;; (lambda (%1 _%2 %3)
-                 ;;   (llama-test--flatten (%1 _%2 . %3)))
                  (lambda (%1 _%2 %3)
                    (llama-test--flatten (%1 . %3)))))
 
   (should (equal (##llama-test--flatten (%1 _%2 %3 . %4))
-                 ;; failure:
-                 ;; (lambda (%1 _%2 %3 %4)
-                 ;;   (llama-test--flatten (%1 _%2 %3 . %4)))
                  (lambda (%1 _%2 %3 %4)
                    (llama-test--flatten (%1 %3 . %4)))))
   )
