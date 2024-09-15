@@ -300,6 +300,72 @@
                    (% %2 %1))))
   )
 
+(defmacro llama-test--flatten (expr)
+  (when (vectorp expr)
+    (setq expr (mapcan (lambda (e)
+                        (if (vectorp e) (append e ()) (list e)))
+                      (append expr ()))))
+  (let ((body ()))
+    (while expr
+      (if (listp expr) (push (pop expr) body) (push expr body) (setq expr nil)))
+    (cons 'list (nreverse body))))
+
+(ert-deftest llama-test-502-vector nil
+  :expected-result :failed
+
+  ;; Real world example: (##-let [val %1] ...).
+
+  (should (equal (##llama-test--flatten [[1 %1]])
+                 (lambda (%1)
+                   (llama-test--flatten [[1 %1]]))))
+
+  (should (equal (##llama-test--flatten [%2 [%1]])
+                 (lambda (%1 %2)
+                   (llama-test--flatten [%2 [%1]]))))
+
+  (should (equal (##llama-test--flatten [%1 _%2 %3])
+                 ;; failure:
+                 ;; (lambda (%1 _%2 %3)
+                 ;;   (llama-test--flatten [%1 llama--unused-argument %3]))
+                 (lambda (%1 _%2 %3)
+                   (llama-test--flatten [%1 %3]))))
+  )
+
+(ert-deftest llama-test-502-dotted nil
+  :expected-result :failed
+
+  ;; Real world example: ???.
+
+  (should (equal (##llama-test--flatten (%1 . %2))
+                 (lambda (%1 %2)
+                   (llama-test--flatten (%1 . %2)))))
+
+  (should (equal (##llama-test--flatten (%1 %2 . %3))
+                 (lambda (%1 %2 %3)
+                   (llama-test--flatten (%1 %2 . %3)))))
+
+  (should (equal (##llama-test--flatten (%1 _%2 . %3))
+                 ;; failure:
+                 ;; (lambda (%1 _%2 %3)
+                 ;;   (llama-test--flatten (%1 _%2 . %3)))
+                 (lambda (%1 _%2 %3)
+                   (llama-test--flatten (%1 . %3)))))
+
+  (should (equal (##llama-test--flatten (%1 _%2 %3 . %4))
+                 ;; failure:
+                 ;; (lambda (%1 _%2 %3 %4)
+                 ;;   (llama-test--flatten (%1 _%2 %3 . %4)))
+                 (lambda (%1 _%2 %3 %4)
+                   (llama-test--flatten (%1 %3 . %4)))))
+  )
+
+(ert-deftest llama-test-503-quoted nil
+
+  (should (equal (##cons %1 '(%2))
+                 (lambda (%1)
+                   (cons %1 '(%2)))))
+  )
+
 (ert-deftest llama-test-901-errors-first nil
   (should-error (##list  %1   &1))
   (should-error (##list  &1   %1))
