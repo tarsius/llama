@@ -133,7 +133,9 @@ unlike the explicitly specified `_%3'.
 The name `##' was chosen because that allows (optionally) omitting
 the whitespace between it and the following symbol.  If you dislike
 this trickery, you can alternatively use this macro under the name
-`llama'."
+`llama'.  (It is also available under the name `\#\#', but the sole
+purpose of that is to allow using \"M-x describe-function RET ## RET\"
+to view this docstring.)"
   (cond ((symbolp fn))
         ((and (eq (car-safe fn) backquote-backquote-symbol)
               (not body))
@@ -177,6 +179,7 @@ this trickery, you can alternatively use this macro under the name
        (,fn ,@body))))
 
 (defalias (quote ##) 'llama)
+(defalias (quote \#\#) 'llama)
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
