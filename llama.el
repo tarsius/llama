@@ -45,10 +45,8 @@
 ;; their names have to begin with `&'.  Symbol `&*' specifies extra
 ;; (`&rest') arguments.
 
-;; Instead of `%1', the shorthand `%' can be used; but that should
-;; only be done if it is the only argument, and using both `%1' and
-;; `%' is not allowed.  Likewise `&' can be substituted for `&1'.
-;; Both shorthands cannot be used in function position.
+;; Instead of `%1', the shorthand `%' can be used, and using both `%1'
+;; and `%' is not allowed.  Likewise `&' can be substituted for `&1'.
 
 ;; Instead of:
 ;;
@@ -99,9 +97,8 @@ following an optional argument have to be optional as well, thus
 their names have to begin with `&'.  Symbol `&*' specifies extra
 \(`&rest') arguments.
 
-Instead of `%1', the shorthand `%' can be used; but that should
-only be done if it is the only argument, and using both `%1' and
-`%' is not allowed.  Likewise `&' can be substituted for `&1'.
+Instead of `%1', the shorthand `%' can be used, and using both `%1'
+and `%' is not allowed.  Likewise `&' can be substituted for `&1'.
 
 Instead of:
 
