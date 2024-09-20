@@ -344,7 +344,7 @@ Unlike implicit unused arguments (which do not appear in the function
 body), these arguments are deleted from the function body during macro
 expansion, and the looks of this face should hint at that.")
 
-(defvar llama-font-lock-keywords
+(defconst llama-font-lock-keywords-28
   '(("(\\(##\\)" 1 'llama-macro)
     ("(\\(llama\\)\\_>" 1 'font-lock-keyword-face)
     ("\\_<\\(?:_?%[1-9]?\\)\\_>"
@@ -354,6 +354,15 @@ expansion, and the looks of this face should hint at that.")
     ("\\_<\\(?:_\\(?:%[1-9]?\\|&[1-9*]?\\)\\)\\_>"
      0 'llama-deleted-argument prepend)))
 
+(defconst llama-font-lock-keywords-29
+  '(("\\_<\\(&[1-9*]?\\)\\_>" 1 'default)
+    (llama--match-and-fontify 1 'llama-macro)))
+
+(defvar llama-font-lock-keywords
+  (if (fboundp 'read-positioning-symbols)
+      llama-font-lock-keywords-29
+    llama-font-lock-keywords-28))
+
 (defun llama--maybe-face (face)
   (and (not (and (member (match-string 0) '("%" "&"))
                  (and-let* ((beg (ignore-errors
@@ -362,6 +371,71 @@ expansion, and the looks of this face should hint at that.")
                                    (buffer-substring-no-properties
                                     (1+ beg) (match-beginning 0))))))
        face))
+
+(defun llama--match-and-fontify (end)
+  (and (re-search-forward "(\\(##\\|llama\\_>\\)" end t)
+       (prog1 t
+         (save-excursion
+           (goto-char (match-beginning 0))
+           (when-let (((save-match-data
+                         (let ((ppss (syntax-ppss)))
+                           (not (or (nth 3 ppss)      ;in string
+                                    (nth 4 ppss)))))) ;in comment
+                      ((fboundp 'read-positioning-symbols))
+                      (expr (ignore-errors
+                              (read-positioning-symbols (current-buffer)))))
+             (put-text-property (match-beginning 0) (point)
+                                'font-lock-multiline t)
+             (llama--fontify (cdr expr) nil nil t))))))
+
+(defun llama--fontify (expr &optional fnpos backquoted top)
+  (cond
+   ((eq (car-safe expr) 'quote))
+   ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
+   ((and (eq (car-safe expr) '##) (not top)))
+   ((and backquoted (symbol-with-pos-p expr)))
+   ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
+    (llama--fontify expr))
+   ((symbol-with-pos-p expr)
+    (save-match-data
+      (when-let*
+          ((name (symbol-name (bare-symbol expr)))
+           (face (cond
+                  ((and (string-match
+                         "\\_<\\(?:\\(_\\)?%\\([1-9]\\)?\\)\\_>" name)
+                        (or (not fnpos) (match-end 2)))
+                   'llama-mandatory-argument)
+                  ((and (string-match
+                         "\\_<\\(?:\\(_\\)?&\\([1-9*]\\)?\\)\\_>" name)
+                        (or (not fnpos) (match-end 2)))
+                   'llama-optional-argument))))
+        (when (match-end 1)
+          (setq face (list 'llama-deleted-argument face)))
+        (let ((beg (symbol-with-pos-pos expr)))
+          (put-text-property
+           beg (save-excursion (goto-char beg) (forward-symbol 1))
+           'face face)))))
+   ((or (listp expr)
+        (vectorp expr))
+    (let* ((vectorp (vectorp expr))
+           (expr (if vectorp (append expr ()) expr))
+           (fnpos (and (not vectorp)
+                       (not backquoted)
+                       (ignore-errors (length expr)))))
+      (catch t
+        (while t
+          (cond ((eq (car expr) backquote-backquote-symbol)
+                 (setq expr (cdr expr))
+                 (llama--fontify (car expr) t t))
+                ((llama--fontify (car expr) fnpos backquoted)))
+          (setq fnpos nil)
+          (setq expr (cdr expr))
+          (unless (and expr
+                       (listp expr)
+                       (not (eq (car expr) backquote-unquote-symbol)))
+            (throw t nil))))
+      (when expr
+        (llama--fontify expr fnpos))))))
 
 (defvar llama-fontify-mode-lighter nil)
 
