@@ -358,7 +358,7 @@ expansion, and the looks of this face should hint at that.")
   (and (not (and (member (match-string 0) '("%" "&"))
                  (and-let* ((beg (ignore-errors
                                    (scan-lists (match-beginning 0) -1 1))))
-                   (string-match-p "\\`\\(##\\)?[ \t\n\r]*\\'"
+                   (string-match-p "\\`\\(##\\|llama\\_>\\)?[\s\t\n\r]*\\'"
                                    (buffer-substring-no-properties
                                     (1+ beg) (match-beginning 0))))))
        face))
