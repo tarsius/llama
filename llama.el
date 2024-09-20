@@ -346,6 +346,7 @@ expansion, and the looks of this face should hint at that.")
 
 (defvar llama-font-lock-keywords
   '(("(\\(##\\)" 1 'llama-macro)
+    ("(\\(llama\\)\\_>" 1 'font-lock-keyword-face)
     ("\\_<\\(?:_?%[1-9]?\\)\\_>"
      0 (llama--maybe-face 'llama-mandatory-argument))
     ("\\_<\\(?:_?&[1-9*]?\\)\\_>"
