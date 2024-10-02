@@ -292,7 +292,7 @@ to view this docstring.)"
 
 The `llama' package uses `##' as the name of a macro, which allows
 it to be used akin to syntax, without actually being new syntax.
-(`describe-function' won't let you select `##', but because that is an
+\(`describe-function' won't let you select `##', but because that is an
 alias for `llama', you can access the documentation under that name.)
 
 This advice prevents the empty string from being offered as a completion
