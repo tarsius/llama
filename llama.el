@@ -51,7 +51,7 @@
 
 ;; Instead of:
 ;;
-;;   (lambda (a _ &optional c &rest d)
+;;   (lambda (a &optional _ c &rest d)
 ;;     (foo a (bar c) d))
 ;;
 ;; you can use this macro and write:
@@ -104,7 +104,7 @@ instead of `&1'.
 
 Instead of:
 
-  (lambda (a _ &optional c &rest d)
+  (lambda (a &optional _ c &rest d)
     (foo a (bar c) d))
 
 you can use this macro and write:

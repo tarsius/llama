@@ -27,7 +27,7 @@ instead of ~&1~.
 Instead of:
 
 #+begin_src emacs-lisp
-  (lambda (a _ &optional c &rest d)
+  (lambda (a &optional _ c &rest d)
     (foo a (bar c) d))
 #+end_src
 
