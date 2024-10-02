@@ -133,7 +133,7 @@ unlike the explicitly specified `_%3'.
 The name `##' was chosen because that allows (optionally) omitting
 the whitespace between it and the following symbol.  If you dislike
 this trickery, you can alternatively use this macro under the name
-`llama'.  (It is also available under the name `\#\#', but the sole
+`llama'.  (It is also available under the name `\\#\\#', but the sole
 purpose of that is to allow using \"M-x describe-function RET ## RET\"
 to view this docstring.)"
   (cond ((symbolp fn))
