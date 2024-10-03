@@ -178,14 +178,14 @@ to view this docstring.)"
         ,@(and rest (list '&rest rest)))
        (,fn ,@body))))
 
-(defalias (quote ##) 'llama)
-(defalias (quote \#\#) 'llama)
+(defalias (intern "") 'llama)
+(defalias '\#\# 'llama)
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
 (defun llama--collect (expr args &optional fnpos backquoted)
   (cond
-   ((memq (car-safe expr) '(## llama quote)) expr)
+   ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
    ((and backquoted (symbolp expr)) expr)
    ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
     (cons backquote-unquote-symbol
@@ -395,7 +395,7 @@ expansion, and the looks of this face should hint at that.")
   (cond
    ((eq (car-safe expr) 'quote))
    ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
-   ((and (memq (car-safe expr) '(## llama)) (not top)))
+   ((and (memq (car-safe expr) (list (intern "") 'llama)) (not top)))
    ((and backquoted (symbol-with-pos-p expr)))
    ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
     (llama--fontify expr))
