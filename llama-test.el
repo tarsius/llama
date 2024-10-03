@@ -374,6 +374,21 @@
                    `(,%1 %2 (,%3) ,%4 . ,%5))))
   )
 
+(ert-deftest llama-test-701-llama nil
+
+  (should (equal (llama list %1)
+                 (lambda (%1)
+                   (list  %1))))
+
+  (should (equal (llama list %1 %1)
+                 (lambda (%1)
+                   (list  %1 %1))))
+
+  (should (equal (llama list %1 %2)
+                 (lambda (%1 %2)
+                   (list  %1 %2))))
+  )
+
 (ert-deftest llama-test-901-errors-first nil
   (should-error (##list  %1   &1))
   (should-error (##list  &1   %1))
