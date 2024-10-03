@@ -377,10 +377,7 @@ expansion, and the looks of this face should hint at that.")
        (prog1 t
          (save-excursion
            (goto-char (match-beginning 0))
-           (when-let (((save-match-data
-                         (let ((ppss (syntax-ppss)))
-                           (not (or (nth 3 ppss)      ;in string
-                                    (nth 4 ppss)))))) ;in comment
+           (when-let (((save-match-data (not (nth 8 (syntax-ppss)))))
                       ((fboundp 'read-positioning-symbols))
                       (expr (ignore-errors
                               (read-positioning-symbols (current-buffer)))))
