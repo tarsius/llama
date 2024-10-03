@@ -387,6 +387,10 @@
   (should (equal (llama list %1 %2)
                  (lambda (%1 %2)
                    (list  %1 %2))))
+
+  (should (equal (llama list %1 (llama list %))
+                 (lambda (%1)
+                   (list %1 (lambda (%) (list %))))))
   )
 
 (ert-deftest llama-test-901-errors-first nil

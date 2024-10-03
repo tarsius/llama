@@ -185,7 +185,7 @@ to view this docstring.)"
 
 (defun llama--collect (expr args &optional fnpos backquoted)
   (cond
-   ((memq (car-safe expr) '(## quote)) expr)
+   ((memq (car-safe expr) '(## llama quote)) expr)
    ((and backquoted (symbolp expr)) expr)
    ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
     (cons backquote-unquote-symbol
@@ -395,7 +395,7 @@ expansion, and the looks of this face should hint at that.")
   (cond
    ((eq (car-safe expr) 'quote))
    ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
-   ((and (eq (car-safe expr) '##) (not top)))
+   ((and (memq (car-safe expr) '(## llama)) (not top)))
    ((and backquoted (symbol-with-pos-p expr)))
    ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
     (llama--fontify expr))
