@@ -320,8 +320,11 @@ that) is used as COLLECTION, by `unintern'ing that symbol temporarily."
   :group 'extensions
   :group 'lisp)
 
-(defface llama-macro '((t :inherit font-lock-function-call-face))
+(defface llama-\#\#-macro '((t :inherit font-lock-function-call-face))
   "Face used for the name of the `##' macro.")
+
+(defface llama-llama-macro '((t :inherit font-lock-keyword-face))
+  "Face used for the name of the `llama' macro.")
 
 (defface llama-mandatory-argument '((t :inherit font-lock-variable-use-face))
   "Face used for mandatory arguments `%1' through `%9' and `%'.")
@@ -345,8 +348,8 @@ body), these arguments are deleted from the function body during macro
 expansion, and the looks of this face should hint at that.")
 
 (defconst llama-font-lock-keywords-28
-  '(("(\\(##\\)" 1 'llama-macro)
-    ("(\\(llama\\)\\_>" 1 'font-lock-keyword-face)
+  '(("(\\(##\\)" 1 'llama-\#\#-macro)
+    ("(\\(llama\\)\\_>" 1 'llama-llama-macro)
     ("\\_<\\(?:_?%[1-9]?\\)\\_>"
      0 (llama--maybe-face 'llama-mandatory-argument))
     ("\\_<\\(?:_?&[1-9*]?\\)\\_>"
@@ -355,8 +358,11 @@ expansion, and the looks of this face should hint at that.")
      0 'llama-deleted-argument prepend)))
 
 (defconst llama-font-lock-keywords-29
-  '(("\\_<\\(&[1-9*]?\\)\\_>" 1 'default)
-    (llama--match-and-fontify 1 'llama-macro)))
+  `(("\\_<\\(&[1-9*]?\\)\\_>" 1 'default)
+    (,(apply-partially #'llama--match-and-fontify "(\\(##\\)")
+     1 'llama-\#\#-macro)
+    (,(apply-partially #'llama--match-and-fontify "(\\(llama\\_>\\)")
+     1 'llama-llama-macro)))
 
 (defvar llama-font-lock-keywords
   (if (fboundp 'read-positioning-symbols)
@@ -372,8 +378,8 @@ expansion, and the looks of this face should hint at that.")
                                     (1+ beg) (match-beginning 0))))))
        face))
 
-(defun llama--match-and-fontify (end)
-  (and (re-search-forward "(\\(##\\|llama\\_>\\)" end t)
+(defun llama--match-and-fontify (re end)
+  (and (re-search-forward re end t)
        (prog1 t
          (save-excursion
            (goto-char (match-beginning 0))
