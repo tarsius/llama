@@ -456,6 +456,28 @@
   (should-error (##list  %1   %))
   )
 
+(ert-deftest llama-test-904-errors-syntax nil
+
+  ;; ((lambda (%) (+ 1 %)) 2)
+  ;;   results in
+  ;; Warning: Use of deprecated ((lambda (%) ...) ...) form
+  ;;   but works.
+
+  ;; ((##+ 1 %) 2)
+  ;;   results at compile-time in
+  ;; Warning: Malformed function ‘(## + 1 %)’
+  ;;   results at run-time in
+  ;; Error: invalid-function ((## + 1 %))
+  ;;   and cannot possibly work.
+
+  ;; Delay macro-expansion for demonstration purposes.
+  (should-error (eval '((##+ 1 %) 2)))
+
+  ;; This is what one should be doing instead.
+  (should (equal (funcall (lambda (%) (+ 1 %)) 2) 3))
+  (should (equal (funcall (##          + 1 %)  2) 3))
+  )
+
 ;; Local Variables:
 ;; eval: (prettify-symbols-mode -1)
 ;; indent-tabs-mode: nil
