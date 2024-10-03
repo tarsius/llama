@@ -106,6 +106,14 @@
                          %1))))
   )
 
+(ert-deftest llama-test-105-basic-nil nil
+
+  (should (equal (##list (##list %) %1)
+                 (lambda (%1)
+                   (list (lambda (%) (list %))
+                         %1))))
+  )
+
 (ert-deftest llama-test-201-unused-implicit-mandatory nil
 
   (should (equal (##list      %2)

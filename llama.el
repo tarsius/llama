@@ -393,6 +393,7 @@ expansion, and the looks of this face should hint at that.")
 
 (defun llama--fontify (expr &optional fnpos backquoted top)
   (cond
+   ((null expr) expr)
    ((eq (car-safe expr) 'quote))
    ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
    ((and (memq (car-safe expr) (list (intern "") 'llama)) (not top)))
