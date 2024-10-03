@@ -187,11 +187,16 @@ to view this docstring.)"
   (cond
    ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
    ((and backquoted (symbolp expr)) expr)
-   ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
-    (list backquote-unquote-symbol
+   ((and backquoted
+         (memq (car-safe expr)
+               (list backquote-unquote-symbol
+                     backquote-splice-symbol)))
+    (list (car expr)
           (llama--collect (cadr expr) args)))
-   ((eq (car-safe expr) backquote-backquote-symbol)
-    (list backquote-backquote-symbol
+   ((memq (car-safe expr)
+          (list backquote-backquote-symbol
+                backquote-splice-symbol))
+    (list (car expr)
           (llama--collect (cadr expr) args nil t)))
    ((symbolp expr)
     (let ((name (symbol-name expr)))
@@ -398,7 +403,10 @@ expansion, and the looks of this face should hint at that.")
    ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
    ((and (memq (car-safe expr) (list (intern "") 'llama)) (not top)))
    ((and backquoted (symbol-with-pos-p expr)))
-   ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
+   ((and backquoted
+         (memq (car-safe expr)
+               (list backquote-unquote-symbol
+                     backquote-splice-symbol)))
     (llama--fontify expr))
    ((symbol-with-pos-p expr)
     (save-match-data
