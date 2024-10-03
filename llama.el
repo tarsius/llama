@@ -183,7 +183,7 @@ to view this docstring.)"
 
 (defconst llama--unused-argument (make-symbol "llama--unused-argument"))
 
-(defun llama--collect (expr args &optional fnpos backquoted)
+(defun llama--collect (expr args &optional fnpos backquoted unquote)
   (cond
    ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
    ((and backquoted (symbolp expr)) expr)
@@ -192,7 +192,7 @@ to view this docstring.)"
                (list backquote-unquote-symbol
                      backquote-splice-symbol)))
     (list (car expr)
-          (llama--collect (cadr expr) args)))
+          (llama--collect (cadr expr) args nil nil t)))
    ((memq (car-safe expr)
           (list backquote-backquote-symbol
                 backquote-splice-symbol))
@@ -208,7 +208,7 @@ to view this docstring.)"
                             ((not pos) 1)
                             ((string-to-number pos))))
                  (sym (aref args pos)))
-            (unless (and fnpos (memq expr '(% &)))
+            (unless (and fnpos (not unquote) (memq expr '(% &)))
               (when (and sym (not (equal expr sym)))
                 (error "`%s' and `%s' are mutually exclusive" sym expr))
               (aset args pos expr)))
