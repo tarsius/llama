@@ -188,11 +188,11 @@ to view this docstring.)"
    ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
    ((and backquoted (symbolp expr)) expr)
    ((and backquoted (eq (car-safe expr) backquote-unquote-symbol))
-    (cons backquote-unquote-symbol
-          (llama--collect (cdr expr) args)))
+    (list backquote-unquote-symbol
+          (llama--collect (cadr expr) args)))
    ((eq (car-safe expr) backquote-backquote-symbol)
-    (cons backquote-backquote-symbol
-          (llama--collect (cdr expr) args nil t)))
+    (list backquote-backquote-symbol
+          (llama--collect (cadr expr) args nil t)))
    ((symbolp expr)
     (let ((name (symbol-name expr)))
       (save-match-data
