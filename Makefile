@@ -12,7 +12,9 @@ $(PKG)-test.elc: $(PKG).elc
 DEPS  =
 
 EMACS      ?= emacs
-EMACS_ARGS ?=
+EMACS_ARGS ?= --eval "(progn \
+  (put 'if-let 'byte-obsolete-info nil) \
+  (put 'when-let 'byte-obsolete-info nil))"
 
 LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
 LOAD_PATH  += -L .
