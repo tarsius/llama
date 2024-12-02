@@ -443,7 +443,7 @@
 
     ;; A good example of what we might not want and theoretically could
     ;; prevent.  However, this can also be prevented by just not going
-    ;; out of our way to wander into ambigious territory.  While not
+    ;; out of our way to wander into ambiguous territory.  While not
     ;; impossible, it is unlikely that someone does this accidentally.
     (should (equal (##setq % 1)
                    (lambda (%)
