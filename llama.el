@@ -1,12 +1,12 @@
 ;;; llama.el --- Compact syntax for short lambda  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2020-2024 Jonas Bernoulli
+;; Copyright (C) 2020-2025 Jonas Bernoulli
 
 ;; Authors: Jonas Bernoulli <emacs.llama@jonas.bernoulli.dev>
 ;; Homepage: https://github.com/tarsius/llama
 ;; Keywords: extensions
 
-;; Package-Version: 0.4.0
+;; Package-Version: 0.4.1
 ;; Package-Requires: ((emacs "26.1"))
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
