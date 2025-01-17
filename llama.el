@@ -320,6 +320,31 @@ that) is used as COLLECTION, by `unintern'ing that symbol temporarily."
       (when bound
         (set (intern "") value)))))
 
+(defvar llama-fontify-mode)
+
+(define-advice lisp--el-match-keyword (:override (limit) llama -80)
+  (catch 'found
+    (while (re-search-forward
+            (concat (if llama-fontify-mode
+                        "(\\(?:## ?\\)?\\("
+                      "(\\(")
+                    (static-if (get 'lisp-mode-symbol 'rx-definition) ;>= 29.1
+                        (rx lisp-mode-symbol)
+                      lisp-mode-symbol-regexp)
+                    "\\)\\_>")
+            limit t)
+      (let ((sym (intern-soft (match-string 1))))
+        (when (and (or (special-form-p sym)
+                       (macrop sym)
+                       ;; Same as in advice of `morlock' package.
+                       (get sym 'morlock-font-lock-keyword))
+                   (not (get sym 'no-font-lock-keyword))
+                   (static-if (fboundp 'lisp--el-funcall-position-p) ;>= 28.1
+                       (lisp--el-funcall-position-p (match-beginning 0))
+                     (not (lisp--el-non-funcall-position-p
+                           (match-beginning 0)))))
+          (throw 'found t))))))
+
 ;;; Fontification
 
 (defgroup llama ()
