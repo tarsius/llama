@@ -9,7 +9,7 @@ ELCS  = $(ELS:.el=.elc)
 $(PKG).elc:
 $(PKG)-test.elc: $(PKG).elc
 
-DEPS  =
+DEPS  = compat
 
 EMACS      ?= emacs
 EMACS_ARGS ?= --eval "(progn \
