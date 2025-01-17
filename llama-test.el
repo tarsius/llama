@@ -439,37 +439,37 @@
   ;; examples where our macro expansion and our font-lock agree, but the
   ;; author might have intended something else.
 
-  (with-no-warnings ; unused arguments
+  (static-if (>= emacs-major-version 28) ; prevent compiler warnings
+      (with-no-warnings ; unused arguments
+        ;; A good example of what we might not want and theoretically could
+        ;; prevent.  However, this can also be prevented by just not going
+        ;; out of our way to wander into ambiguous territory.  While not
+        ;; impossible, it is unlikely that someone does this accidentally.
+        (should (equal (##setq % 1)
+                       (lambda (%)
+                         (setq % 1))))
 
-    ;; A good example of what we might not want and theoretically could
-    ;; prevent.  However, this can also be prevented by just not going
-    ;; out of our way to wander into ambiguous territory.  While not
-    ;; impossible, it is unlikely that someone does this accidentally.
-    (should (equal (##setq % 1)
-                   (lambda (%)
-                     (setq % 1))))
-
-    ;; We have to fake `-setq' because we don't want to depend on `dash'
-    ;; and because (equal (lambda () (-setq a 1)) (lambda () (-setq a 1)))
-    ;; is never true because `-setq' uses `make-symbol'.  Mocking that
-    ;; macro does *not* affect the expansion of `##' into a `lambda'.
-    (cl-macrolet ((-setq (&rest args) `'(,@args)))
-      (should (equal (##-setq % 1)
-                     (lambda (%)
-                       (-setq % 1))))
-      (should (equal (##-setq (%) '(1))
-                     (lambda ()
-                       (-setq (%) '(1)))))
-      (should (equal (##-setq [(%)] [(1)])
-                     (lambda ()
-                       (-setq [(%)] [(1)]))))
-      (should (equal (##-setq [(% %)] [(1 2)])
-                     (lambda (%)
-                       (-setq [(% %)] [(1 2)]))))
-      (should (equal (##-setq [(%1)] [(1)])
-                     (lambda (%1)
-                       (-setq [(%1)] [(1)]))))))
-  )
+        ;; We have to fake `-setq' because we don't want to depend on `dash'
+        ;; and because (equal (lambda () (-setq a 1)) (lambda () (-setq a 1)))
+        ;; is never true because `-setq' uses `make-symbol'.  Mocking that
+        ;; macro does *not* affect the expansion of `##' into a `lambda'.
+        (cl-macrolet ((-setq (&rest args) `'(,@args)))
+          (should (equal (##-setq % 1)
+                         (lambda (%)
+                           (-setq % 1))))
+          (should (equal (##-setq (%) '(1))
+                         (lambda ()
+                           (-setq (%) '(1)))))
+          (should (equal (##-setq [(%)] [(1)])
+                         (lambda ()
+                           (-setq [(%)] [(1)]))))
+          (should (equal (##-setq [(% %)] [(1 2)])
+                         (lambda (%)
+                           (-setq [(% %)] [(1 2)]))))
+          (should (equal (##-setq [(%1)] [(1)])
+                         (lambda (%1)
+                           (-setq [(%1)] [(1)]))))))
+    ))
 
 (ert-deftest llama-test-902-errors-second nil
   (should-error (##list  %2   &2))
