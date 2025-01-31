@@ -501,7 +501,5 @@ expansion, and the looks of this face should hint at that.")
   llama-fontify-mode llama--turn-on-fontify-mode)
 
 (provide 'llama)
-;; Local Variables:
-;; indent-tabs-mode: nil
-;; End:
+
 ;;; llama.el ends here
