@@ -500,6 +500,62 @@ expansion, and the looks of this face should hint at that.")
 (define-globalized-minor-mode global-llama-fontify-mode
   llama-fontify-mode llama--turn-on-fontify-mode)
 
+;;; Partial applications
+
+(defun llama--left-apply-partially (fn &rest args)
+  "Return a function that is a partial application of FN to ARGS.
+
+ARGS is a list of the first N arguments to pass to FN.  The result
+is a new function which does the same as FN, except that the first N
+arguments are fixed at the values with which this function was called.
+
+See also `llama--right-apply-partially', which instead fixes the last
+N arguments.
+
+These functions are intended to be used using the names `partial' and
+`rpartial'.  To be able to use these shorthands in a file, you must set
+the file-local value of `read-symbols-shorthands', which was added in
+Emacs 28.1.  For an example see the end of file \"llama.el\".
+
+This is an alternative to `apply-partially', whose name is too long."
+  (declare (pure t) (side-effect-free error-free))
+  (lambda (&rest args2)
+    (apply fn (append args args2))))
+
+(defun llama--right-apply-partially (fn &rest args)
+  "Return a function that is a right partial application of FN to ARGS.
+
+ARGS is a list of the last N arguments to pass to FN.  The result
+is a new function which does the same as FN, except that the last N
+arguments are fixed at the values with which this function was called.
+
+See also `llama--left-apply-partially', which instead fixes the first
+N arguments.
+
+These functions are intended to be used using the names `rpartial' and
+`partial'.  To be able to use these shorthands in a file, you must set
+the file-local value of `read-symbols-shorthands', which was added in
+Emacs 28.1.  For an example see the end of file \"llama.el\"."
+  (declare (pure t) (side-effect-free error-free))
+  (lambda (&rest args2)
+    (apply fn (append args2 args))))
+
+;; An example of how one would use these functions:
+;;
+;; (list (funcall (partial (lambda (a b) (list a b)) 'fixed) 'after)
+;;       (funcall (rpartial (lambda (a b) (list a b)) 'fixed) 'before))
+
+;; An example of the configuration that is necessary to enable this:
+;;
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("partial" . "llama--left-apply-partially")
+;;   ("rpartial" . "llama--right-apply-partially"))
+;; End:
+;;
+;; Alternatively you can set this variable in a ".dir-locals.el" file.
+;; See this package's ".dir-locals.el" for an example.
+
 (provide 'llama)
 
 ;;; llama.el ends here
