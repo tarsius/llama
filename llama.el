@@ -548,13 +548,14 @@ Emacs 28.1.  For an example see the end of file \"llama.el\"."
 ;; An example of the configuration that is necessary to enable this:
 ;;
 ;; Local Variables:
+;; indent-tabs-mode: nil
 ;; read-symbol-shorthands: (
 ;;   ("partial" . "llama--left-apply-partially")
 ;;   ("rpartial" . "llama--right-apply-partially"))
 ;; End:
 ;;
-;; Alternatively you can set this variable in a ".dir-locals.el" file.
-;; See this package's ".dir-locals.el" for an example.
+;; Do not set `read-symbol-shorthands' in the ".dir-locals.el"
+;; file, because that does not work for uncompiled libraries.
 
 (provide 'llama)
 
