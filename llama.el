@@ -306,8 +306,7 @@ This advice prevents the empty string from being offered as a completion
 candidate when `obarray' or a completion table that internally uses
 that is used as TABLE."
   (let ((result (apply fn str table rest)))
-    (if (and (obarrayp table)
-             (eq (symbol-function (intern-soft "" table)) 'llama))
+    (if (and (eq obarray table) (equal str ""))
         (delete "" result)
       result)))
 
