@@ -245,8 +245,10 @@ explicitly specified `_%3'."
 
 ;;; Advices
 
-(define-advice elisp--expect-function-p (:around (fn pos) llama)
-  "Support function completion directly following `##'."
+(defun llama--adv-elisp--expect-function-p (fn pos)
+  "Around advice for `elisp--expect-function-p'.
+The advice adds support for function completion after `##'.  The
+argument POS is passed to the original FN."
   (or (and (eq (char-before    pos)    ?#)
            (eq (char-before (- pos 1)) ?#))
       (and (eq (char-before    pos)    ?\s)
@@ -254,9 +256,10 @@ explicitly specified `_%3'."
            (eq (char-before (- pos 2)) ?#))
       (funcall fn pos)))
 
-(define-advice elisp-mode-syntax-propertize (:override (start end) llama)
-  ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
-  "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
+;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
+(defun llama--adv-elisp-mode-syntax-propertize (start end)
+  "Override advice for `elisp-mode-syntax-propertize'.
+Don't change syntax of `##'.  START and END is the region to propertize."
   (goto-char start)
   (let ((case-fold-search nil))
     (funcall
@@ -290,6 +293,8 @@ explicitly specified `_%3'."
             (string-to-syntax "'")))))
      start end)))
 
+;; The `all-completions' advice is always enabled such that completion is
+;; unaffected if llama.el is loaded.
 (define-advice all-completions (:around (fn str table &rest rest) llama)
   "Remove empty symbol from completion results if originating from `llama'.
 
@@ -310,14 +315,12 @@ that is used as TABLE."
         (delete "" result)
       result)))
 
-(defvar llama-fontify-mode)
-
-(define-advice lisp--el-match-keyword (:override (limit) llama -80)
+(defun llama--adv-lisp--el-match-keyword (limit)
+  "Override advice for `lisp--el-match-keyword'.
+Scan from point until LIMIT."
   (catch 'found
     (while (re-search-forward
-            (concat (if llama-fontify-mode
-                        "(\\(?:## ?\\)?\\("
-                      "(\\(")
+            (concat "(\\(?:## ?\\)?\\("
                     (static-if (get 'lisp-mode-symbol 'rx-definition) ;>= 29.1
                         (rx lisp-mode-symbol)
                       lisp-mode-symbol-regexp)
@@ -477,9 +480,14 @@ expansion, and the looks of this face should hint at that.")
 (define-minor-mode llama-fontify-mode
   "Toggle fontification of the `##' macro and its positional arguments."
   :lighter llama-fontify-mode-lighter
-  (if llama-fontify-mode
-      (font-lock-add-keywords  nil llama-font-lock-keywords)
-    (font-lock-remove-keywords nil llama-font-lock-keywords)))
+  (if (not llama-fontify-mode)
+      (font-lock-remove-keywords nil llama-font-lock-keywords)
+    (font-lock-add-keywords  nil llama-font-lock-keywords)
+    ;; Enable advices as soon as Llama completion and font locking are
+    ;; enabled. Never disable the advices again.
+    (advice-add 'elisp--expect-function-p :around #'llama--adv-elisp--expect-function-p)
+    (advice-add 'elisp-mode-syntax-propertize :override #'llama--adv-elisp-mode-syntax-propertize)
+    (advice-add 'lisp--el-match-keyword :override #'llama--adv-lisp--el-match-keyword '((depth . -80)))))
 
 (defun llama--turn-on-fontify-mode ()
   "Enable `llama-fontify-mode' if in an Emacs Lisp buffer."
