@@ -272,9 +272,9 @@ explicitly specified `_%3'."
       ("##" (0 (when (nth 8 (syntax-ppss))
                  (string-to-syntax "_"))))
       ;; }}
-      ;; Prevent the @ from becoming part of a following symbol.
       ;; {{ Preserve this part, even though it is absent from
       ;;    this function in 29.1; backporting it by association.
+      ;; Prevent the @ from becoming part of a following symbol.
       (",@" (0 (unless (nth 8 (syntax-ppss))
                  (string-to-syntax "'"))))
       ;; }}
