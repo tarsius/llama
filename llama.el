@@ -414,27 +414,32 @@ expansion, and the looks of this face should hint at that.")
 
 ;;;###autoload
 (define-minor-mode llama-fontify-mode
-  "Toggle fontification of the `##' macro and its positional arguments."
+  "Highlight the `##' macro in Emacs Lisp mode."
   :lighter llama-fontify-mode-lighter
-  (if llama-fontify-mode
-      (font-lock-add-keywords  nil llama-font-lock-keywords)
-    (font-lock-remove-keywords nil llama-font-lock-keywords)))
+  :global t
+  (cond
+   (llama-fontify-mode
+    (add-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords))
+   (t
+    (remove-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords)))
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (derived-mode-p 'emacs-lisp-mode)
+        (if llama-fontify-mode
+            (font-lock-add-keywords  nil llama-font-lock-keywords)
+          (font-lock-remove-keywords nil llama-font-lock-keywords))
+        (font-lock-flush)))))
 
-(defun llama--turn-on-fontify-mode ()
-  "Enable `llama-fontify-mode' if in an Emacs Lisp buffer."
-  (when (derived-mode-p #'emacs-lisp-mode)
-    (llama-fontify-mode)))
+(defun llama--add-font-lock-keywords ()
+  (font-lock-add-keywords nil llama-font-lock-keywords))
 
-;;;###autoload
-(define-globalized-minor-mode global-llama-fontify-mode
-  llama-fontify-mode llama--turn-on-fontify-mode)
+(define-obsolete-function-alias 'global-llama-fontify-mode
+  #'llama-fontify-mode "Llama 0.6.2")
 
 (define-advice lisp--el-match-keyword (:override (limit) llama -80)
   (catch 'found
     (while (re-search-forward
-            (concat (if llama-fontify-mode
-                        "(\\(?:## ?\\)?\\("
-                      "(\\(")
+            (concat "(\\(?:## ?\\)?\\("
                     (static-if (get 'lisp-mode-symbol 'rx-definition) ;>= 29.1
                         (rx lisp-mode-symbol)
                       lisp-mode-symbol-regexp)
