@@ -80,6 +80,9 @@
 ;; begin with an underscore.  Also note that `_&4' is optional, unlike the
 ;; explicitly specified `_%3'.
 
+;; Consider enabling `llama-fontify-mode' to highlight `##' and its
+;; special arguments.
+
 ;;; Code:
 
 (require 'compat)
@@ -137,7 +140,10 @@ becomes:
 
 Note how `_%3' and `_&6' are removed from the body, because their names
 begin with an underscore.  Also note that `_&4' is optional, unlike the
-explicitly specified `_%3'."
+explicitly specified `_%3'.
+
+Consider enabling `llama-fontify-mode' to highlight `##' and its
+special arguments."
   (cond ((symbolp fn))
         ((and (eq (car-safe fn) backquote-backquote-symbol)
               (not body))
