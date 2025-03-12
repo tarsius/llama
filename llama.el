@@ -285,6 +285,7 @@ that is used as TABLE."
 (defgroup llama ()
   "Compact syntax for short lambda."
   :group 'extensions
+  :group 'faces
   :group 'lisp)
 
 (defface llama-\#\#-macro '((t :inherit font-lock-function-call-face))
