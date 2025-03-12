@@ -243,7 +243,7 @@ explicitly specified `_%3'."
       (if vectorp (vconcat ret) ret)))
    (expr)))
 
-;;; Advices
+;;; Completion
 
 (define-advice elisp--expect-function-p (:around (fn pos) llama)
   "Support function completion directly following `##'."
@@ -253,42 +253,6 @@ explicitly specified `_%3'."
            (eq (char-before (- pos 1)) ?#)
            (eq (char-before (- pos 2)) ?#))
       (funcall fn pos)))
-
-(define-advice elisp-mode-syntax-propertize (:override (start end) llama)
-  ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
-  "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
-  (goto-char start)
-  (let ((case-fold-search nil))
-    (funcall
-     (syntax-propertize-rules
-      ;; Empty symbol.
-      ;; {{ Comment out to prevent the `##' from becoming part of
-      ;;    the following symbol when there is no space in between.
-      ;; ("##" (0 (unless (nth 8 (syntax-ppss))
-      ;;            (string-to-syntax "_"))))
-      ;; }}
-      ;; {{ As for other symbols, use `font-lock-constant-face' in
-      ;;    docstrings and comments.
-      ("##" (0 (when (nth 8 (syntax-ppss))
-                 (string-to-syntax "_"))))
-      ;; }}
-      ;; {{ Preserve this part, even though it is absent from
-      ;;    this function in 29.1; backporting it by association.
-      ;; Prevent the @ from becoming part of a following symbol.
-      (",@" (0 (unless (nth 8 (syntax-ppss))
-                 (string-to-syntax "'"))))
-      ;; }}
-      ;; Unicode character names.  (The longest name is 88 characters
-      ;; long.)
-      ("\\?\\\\N{[-A-Za-z0-9 ]\\{,100\\}}"
-       (0 (unless (nth 8 (syntax-ppss))
-            (string-to-syntax "_"))))
-      ((rx "#" (or (seq (group-n 1 "&" (+ digit)) ?\") ; Bool-vector.
-                   (seq (group-n 1 "s") "(")           ; Record.
-                   (seq (group-n 1 (+ "^")) "[")))     ; Char-table.
-       (1 (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
-            (string-to-syntax "'")))))
-     start end)))
 
 (define-advice all-completions (:around (fn str table &rest rest) llama)
   "Remove empty symbol from completion results if originating from `llama'.
@@ -309,31 +273,6 @@ that is used as TABLE."
     (if (and (eq obarray table) (equal str ""))
         (delete "" result)
       result)))
-
-(defvar llama-fontify-mode)
-
-(define-advice lisp--el-match-keyword (:override (limit) llama -80)
-  (catch 'found
-    (while (re-search-forward
-            (concat (if llama-fontify-mode
-                        "(\\(?:## ?\\)?\\("
-                      "(\\(")
-                    (static-if (get 'lisp-mode-symbol 'rx-definition) ;>= 29.1
-                        (rx lisp-mode-symbol)
-                      lisp-mode-symbol-regexp)
-                    "\\)\\_>")
-            limit t)
-      (let ((sym (intern-soft (match-string 1))))
-        (when (and (or (special-form-p sym)
-                       (macrop sym)
-                       ;; Same as in advice of `morlock' package.
-                       (get sym 'morlock-font-lock-keyword))
-                   (not (get sym 'no-font-lock-keyword))
-                   (static-if (fboundp 'lisp--el-funcall-position-p) ;>= 28.1
-                       (lisp--el-funcall-position-p (match-beginning 0))
-                     (not (lisp--el-non-funcall-position-p
-                           (match-beginning 0)))))
-          (throw 'found t))))))
 
 ;;; Fontification
 
@@ -489,6 +428,65 @@ expansion, and the looks of this face should hint at that.")
 ;;;###autoload
 (define-globalized-minor-mode global-llama-fontify-mode
   llama-fontify-mode llama--turn-on-fontify-mode)
+
+(define-advice lisp--el-match-keyword (:override (limit) llama -80)
+  (catch 'found
+    (while (re-search-forward
+            (concat (if llama-fontify-mode
+                        "(\\(?:## ?\\)?\\("
+                      "(\\(")
+                    (static-if (get 'lisp-mode-symbol 'rx-definition) ;>= 29.1
+                        (rx lisp-mode-symbol)
+                      lisp-mode-symbol-regexp)
+                    "\\)\\_>")
+            limit t)
+      (let ((sym (intern-soft (match-string 1))))
+        (when (and (or (special-form-p sym)
+                       (macrop sym)
+                       ;; Same as in advice of `morlock' package.
+                       (get sym 'morlock-font-lock-keyword))
+                   (not (get sym 'no-font-lock-keyword))
+                   (static-if (fboundp 'lisp--el-funcall-position-p) ;>= 28.1
+                       (lisp--el-funcall-position-p (match-beginning 0))
+                     (not (lisp--el-non-funcall-position-p
+                           (match-beginning 0)))))
+          (throw 'found t))))))
+
+(define-advice elisp-mode-syntax-propertize (:override (start end) llama)
+  ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
+  "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
+  (goto-char start)
+  (let ((case-fold-search nil))
+    (funcall
+     (syntax-propertize-rules
+      ;; Empty symbol.
+      ;; {{ Comment out to prevent the `##' from becoming part of
+      ;;    the following symbol when there is no space in between.
+      ;; ("##" (0 (unless (nth 8 (syntax-ppss))
+      ;;            (string-to-syntax "_"))))
+      ;; }}
+      ;; {{ As for other symbols, use `font-lock-constant-face' in
+      ;;    docstrings and comments.
+      ("##" (0 (when (nth 8 (syntax-ppss))
+                 (string-to-syntax "_"))))
+      ;; }}
+      ;; {{ Preserve this part, even though it is absent from
+      ;;    this function in 29.1; backporting it by association.
+      ;; Prevent the @ from becoming part of a following symbol.
+      (",@" (0 (unless (nth 8 (syntax-ppss))
+                 (string-to-syntax "'"))))
+      ;; }}
+      ;; Unicode character names.  (The longest name is 88 characters
+      ;; long.)
+      ("\\?\\\\N{[-A-Za-z0-9 ]\\{,100\\}}"
+       (0 (unless (nth 8 (syntax-ppss))
+            (string-to-syntax "_"))))
+      ((rx "#" (or (seq (group-n 1 "&" (+ digit)) ?\") ; Bool-vector.
+                   (seq (group-n 1 "s") "(")           ; Record.
+                   (seq (group-n 1 (+ "^")) "[")))     ; Char-table.
+       (1 (unless (save-excursion (nth 8 (syntax-ppss (match-beginning 0))))
+            (string-to-syntax "'")))))
+     start end)))
 
 ;;; Partial applications
 
