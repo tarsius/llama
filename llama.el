@@ -464,8 +464,9 @@ expansion, and the looks of this face should hint at that.")
       (let ((sym (intern-soft (match-string 1))))
         (when (and (or (special-form-p sym)
                        (macrop sym)
-                       ;; Same as in advice of `morlock' package.
-                       (get sym 'morlock-font-lock-keyword))
+                       (and (bound-and-true-p morlock-mode)
+                            ;; Same as in advice of `morlock' package.
+                            (get sym 'morlock-font-lock-keyword)))
                    (not (get sym 'no-font-lock-keyword))
                    (static-if (fboundp 'lisp--el-funcall-position-p) ;>= 28.1
                        (lisp--el-funcall-position-p (match-beginning 0))
