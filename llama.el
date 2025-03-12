@@ -414,13 +414,21 @@ expansion, and the looks of this face should hint at that.")
 
 ;;;###autoload
 (define-minor-mode llama-fontify-mode
-  "Highlight the `##' macro in Emacs Lisp mode."
+  "In Emacs Lisp mode, highlight the `##' macro and its special arguments."
   :lighter llama-fontify-mode-lighter
   :global t
   (cond
    (llama-fontify-mode
+    (advice-add 'lisp--el-match-keyword :override
+                #'lisp--el-match-keyword@llama '((depth . -80)))
+    (advice-add 'elisp-mode-syntax-propertize :override
+                #'elisp-mode-syntax-propertize@llama)
     (add-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords))
    (t
+    (advice-remove 'lisp--el-match-keyword
+                   #'lisp--el-match-keyword@llama)
+    (advice-remove 'elisp-mode-syntax-propertize
+                   #'elisp-mode-syntax-propertize@llama)
     (remove-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords)))
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
@@ -436,7 +444,8 @@ expansion, and the looks of this face should hint at that.")
 (define-obsolete-function-alias 'global-llama-fontify-mode
   #'llama-fontify-mode "Llama 0.6.2")
 
-(define-advice lisp--el-match-keyword (:override (limit) llama -80)
+(defun lisp--el-match-keyword@llama (limit)
+  "Highlight symbols following \"(##\" the same as if they followed \"(\"."
   (catch 'found
     (while (re-search-forward
             (concat "(\\(?:## ?\\)?\\("
@@ -457,9 +466,9 @@ expansion, and the looks of this face should hint at that.")
                            (match-beginning 0)))))
           (throw 'found t))))))
 
-(define-advice elisp-mode-syntax-propertize (:override (start end) llama)
+(defun elisp-mode-syntax-propertize@llama (start end)
   ;; Synced with Emacs up to 6b9510d94f814cacf43793dce76250b5f7e6f64a.
-  "Like `elisp-mode-syntax-propertize' but don't change syntax of `##'."
+  "Highlight `##' as the symbol which it is."
   (goto-char start)
   (let ((case-fold-search nil))
     (funcall
