@@ -448,9 +448,6 @@ expansion, and the looks of this face should hint at that.")
 (defun llama--add-font-lock-keywords ()
   (font-lock-add-keywords nil llama-font-lock-keywords))
 
-(define-obsolete-function-alias 'global-llama-fontify-mode
-  #'llama-fontify-mode "Llama 0.6.2")
-
 (defun lisp--el-match-keyword@llama (limit)
   "Highlight symbols following \"(##\" the same as if they followed \"(\"."
   (catch 'found
