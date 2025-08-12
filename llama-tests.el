@@ -4,7 +4,6 @@
 
 ;; Authors: Jonas Bernoulli <emacs.llama@jonas.bernoulli.dev>
 ;; Homepage: https://github.com/tarsius/llama
-;; Keywords: extensions
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
