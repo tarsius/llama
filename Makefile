@@ -3,11 +3,11 @@
 PKG = llama
 
 ELS   = $(PKG).el
-ELS  += $(PKG)-test.el
+ELS  += $(PKG)-tests.el
 ELCS  = $(ELS:.el=.elc)
 
 $(PKG).elc:
-$(PKG)-test.elc: $(PKG).elc
+$(PKG)-tests.elc: $(PKG).elc
 
 DEPS  = compat
 
@@ -46,7 +46,7 @@ check-declare:
 
 test: lisp
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
-	-l ert -l $(PKG)-test.el -f ert-run-tests-batch-and-exit
+	-l ert -l $(PKG)-tests.el -f ert-run-tests-batch-and-exit
 
 CLEAN  = $(ELCS) $(PKG)-autoloads.el
 
