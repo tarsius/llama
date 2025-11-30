@@ -11,13 +11,16 @@ $(PKG)-tests.elc: $(PKG).elc
 
 DEPS  = compat
 
-EMACS      ?= emacs
+
+LOAD_PATH ?= $(addprefix -L ../,$(DEPS))
+LOAD_PATH += -L .
+
+EMACS       ?= emacs
 EMACS_ARGS ?= --eval "(progn \
   (put 'if-let 'byte-obsolete-info nil) \
   (put 'when-let 'byte-obsolete-info nil))"
-
-LOAD_PATH  ?= $(addprefix -L ../,$(DEPS))
-LOAD_PATH  += -L .
+EMACS_Q_ARG ?= -Q
+EMACS_BATCH ?= $(EMACS) $(EMACS_Q_ARG) --batch $(EMACS_ARGS) $(LOAD_PATH)
 
 all: lisp
 
@@ -37,12 +40,11 @@ autoloads: $(PKG)-autoloads.el
 
 %.elc: %.el
 	@printf "Compiling $<\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) -f batch-byte-compile $<
+	@$(EMACS_BATCH) --funcall batch-byte-compile $<
 
 check-declare:
 	@printf " Checking function declarations\n"
-	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
-	--eval "(check-declare-directory default-directory)"
+	@$(EMACS_BATCH) --eval "(check-declare-directory default-directory)"
 
 test: lisp
 	@$(EMACS) -Q --batch $(EMACS_ARGS) $(LOAD_PATH) \
@@ -56,7 +58,7 @@ clean:
 
 $(PKG)-autoloads.el: $(ELS)
 	@printf " Creating $@\n"
-	@$(EMACS) -Q --batch -l autoload --eval "\
+	@$(EMACS_BATCH) --load autoload --eval "\
 (let* ((file (expand-file-name \"$@\"))\
        (generated-autoload-file file)\
        (coding-system-for-write 'utf-8-emacs-unix)\
