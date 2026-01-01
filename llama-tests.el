@@ -318,8 +318,8 @@
 (defmacro llama-test--flatten (expr)
   (when (vectorp expr)
     (setq expr (mapcan (lambda (e)
-                        (if (vectorp e) (append e ()) (list e)))
-                      (append expr ()))))
+                         (if (vectorp e) (append e ()) (list e)))
+                       (append expr ()))))
   (let ((body ()))
     (while expr
       (if (listp expr) (push (pop expr) body) (push expr body) (setq expr nil)))
