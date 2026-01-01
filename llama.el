@@ -174,14 +174,14 @@ special arguments."
          (args (mapcar
                 (lambda (symbol)
                   (cond
-                   ((string-match-p "\\`_?%" (symbol-name symbol))
-                    (when opt
-                      (error "`%s' cannot follow optional arguments" symbol))
-                    (list symbol))
-                   (opt
-                    (list symbol))
-                   ((setq opt t)
-                    (list '&optional symbol))))
+                    ((string-match-p "\\`_?%" (symbol-name symbol))
+                     (when opt
+                       (error "`%s' cannot follow optional arguments" symbol))
+                     (list symbol))
+                    (opt
+                     (list symbol))
+                    ((setq opt t)
+                     (list '&optional symbol))))
                 (nreverse args))))
     `(lambda
        (,@(apply #'nconc args)
@@ -195,61 +195,61 @@ special arguments."
 
 (defun llama--collect (expr args &optional fnpos backquoted unquote)
   (cond
-   ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
-   ((and backquoted (symbolp expr)) expr)
-   ((and backquoted
-         (memq (car-safe expr)
-               (list backquote-unquote-symbol
-                     backquote-splice-symbol)))
-    (list (car expr)
-          (llama--collect (cadr expr) args nil nil t)))
-   ((memq (car-safe expr)
-          (list backquote-backquote-symbol
-                backquote-splice-symbol))
-    (list (car expr)
-          (llama--collect (cadr expr) args nil t)))
-   ((symbolp expr)
-    (let ((name (symbol-name expr)))
-      (save-match-data
-        (cond
-         ((string-match "\\`\\(_\\)?[%&]\\([1-9*]\\)?\\'" name)
-          (let* ((pos (match-string 2 name))
-                 (pos (cond ((equal pos "*") 0)
-                            ((not pos) 1)
-                            ((string-to-number pos))))
-                 (sym (aref args pos)))
-            (unless (and fnpos (not unquote) (memq expr '(% &)))
-              (when (and sym (not (equal expr sym)))
-                (error "`%s' and `%s' are mutually exclusive" sym expr))
-              (aset args pos expr)))
-          (if (match-string 1 name)
-              llama--unused-argument
-            expr))
-         (expr)))))
-   ((or (listp expr)
-        (vectorp expr))
-    (let* ((vectorp (vectorp expr))
-           (expr (if vectorp (append expr ()) expr))
-           (fnpos (and (not vectorp)
-                       (not backquoted)
-                       (ignore-errors (length expr)))) ;proper-list-p
-           (ret ()))
-      (catch t
-        (while t
-          (let ((elt (llama--collect (car expr) args fnpos backquoted)))
-            (unless (eq elt llama--unused-argument)
-              (push elt ret)))
-          (setq fnpos nil)
-          (setq expr (cdr expr))
-          (unless (and expr
-                       (listp expr)
-                       (not (eq (car expr) backquote-unquote-symbol)))
-            (throw t nil))))
-      (setq ret (nreverse ret))
-      (when expr
-        (setcdr (last ret) (llama--collect expr args nil backquoted)))
-      (if vectorp (vconcat ret) ret)))
-   (expr)))
+    ((memq (car-safe expr) (list (intern "") 'llama 'quote)) expr)
+    ((and backquoted (symbolp expr)) expr)
+    ((and backquoted
+          (memq (car-safe expr)
+                (list backquote-unquote-symbol
+                      backquote-splice-symbol)))
+     (list (car expr)
+           (llama--collect (cadr expr) args nil nil t)))
+    ((memq (car-safe expr)
+           (list backquote-backquote-symbol
+                 backquote-splice-symbol))
+     (list (car expr)
+           (llama--collect (cadr expr) args nil t)))
+    ((symbolp expr)
+     (let ((name (symbol-name expr)))
+       (save-match-data
+         (cond
+           ((string-match "\\`\\(_\\)?[%&]\\([1-9*]\\)?\\'" name)
+            (let* ((pos (match-string 2 name))
+                   (pos (cond ((equal pos "*") 0)
+                              ((not pos) 1)
+                              ((string-to-number pos))))
+                   (sym (aref args pos)))
+              (unless (and fnpos (not unquote) (memq expr '(% &)))
+                (when (and sym (not (equal expr sym)))
+                  (error "`%s' and `%s' are mutually exclusive" sym expr))
+                (aset args pos expr)))
+            (if (match-string 1 name)
+                llama--unused-argument
+              expr))
+           (expr)))))
+    ((or (listp expr)
+         (vectorp expr))
+     (let* ((vectorp (vectorp expr))
+            (expr (if vectorp (append expr ()) expr))
+            (fnpos (and (not vectorp)
+                        (not backquoted)
+                        (ignore-errors (length expr)))) ;proper-list-p
+            (ret ()))
+       (catch t
+         (while t
+           (let ((elt (llama--collect (car expr) args fnpos backquoted)))
+             (unless (eq elt llama--unused-argument)
+               (push elt ret)))
+           (setq fnpos nil)
+           (setq expr (cdr expr))
+           (unless (and expr
+                        (listp expr)
+                        (not (eq (car expr) backquote-unquote-symbol)))
+             (throw t nil))))
+       (setq ret (nreverse ret))
+       (when expr
+         (setcdr (last ret) (llama--collect expr args nil backquoted)))
+       (if vectorp (vconcat ret) ret)))
+    (expr)))
 
 ;;; Completion
 
@@ -365,58 +365,58 @@ expansion, and the looks of this face should hint at that.")
 (defun llama--fontify (expr &optional fnpos backquoted top)
   (static-if (fboundp 'bare-symbol)
       (cond
-       ((null expr) expr)
-       ((eq (car-safe expr) 'quote))
-       ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
-       ((and (memq (ignore-errors (bare-symbol (car-safe expr)))
-                   (list (intern "") 'llama))
-             (not top)))
-       ((and backquoted (symbol-with-pos-p expr)))
-       ((and backquoted
-             (memq (car-safe expr)
-                   (list backquote-unquote-symbol
-                         backquote-splice-symbol)))
-        (llama--fontify expr))
-       ((symbol-with-pos-p expr)
-        (save-match-data
-          (when-let*
-              ((name (symbol-name (bare-symbol expr)))
-               (face (cond
-                      ((and (string-match
-                             "\\_<\\(?:\\(_\\)?%\\([1-9]\\)?\\)\\_>" name)
-                            (or (not fnpos) (match-end 2)))
-                       'llama-mandatory-argument)
-                      ((and (string-match
-                             "\\_<\\(?:\\(_\\)?&\\([1-9*]\\)?\\)\\_>" name)
-                            (or (not fnpos) (match-end 2)))
-                       'llama-optional-argument))))
-            (when (match-end 1)
-              (setq face (list 'llama-deleted-argument face)))
-            (let ((beg (symbol-with-pos-pos expr)))
-              (put-text-property
-               beg (save-excursion (goto-char beg) (forward-symbol 1))
-               'face face)))))
-       ((or (listp expr)
-            (vectorp expr))
-        (let* ((vectorp (vectorp expr))
-               (expr (if vectorp (append expr ()) expr))
-               (fnpos (and (not vectorp)
-                           (not backquoted)
-                           (ignore-errors (length expr)))))
-          (catch t
-            (while t
-              (cond ((eq (car expr) backquote-backquote-symbol)
-                     (setq expr (cdr expr))
-                     (llama--fontify (car expr) t t))
-                    ((llama--fontify (car expr) fnpos backquoted)))
-              (setq fnpos nil)
-              (setq expr (cdr expr))
-              (unless (and expr
-                           (listp expr)
-                           (not (eq (car expr) backquote-unquote-symbol)))
-                (throw t nil))))
-          (when expr
-            (llama--fontify expr fnpos))))))
+        ((null expr) expr)
+        ((eq (car-safe expr) 'quote))
+        ((eq (ignore-errors (bare-symbol (car-safe expr))) 'quote))
+        ((and (memq (ignore-errors (bare-symbol (car-safe expr)))
+                    (list (intern "") 'llama))
+              (not top)))
+        ((and backquoted (symbol-with-pos-p expr)))
+        ((and backquoted
+              (memq (car-safe expr)
+                    (list backquote-unquote-symbol
+                          backquote-splice-symbol)))
+         (llama--fontify expr))
+        ((symbol-with-pos-p expr)
+         (save-match-data
+           (when-let*
+               ((name (symbol-name (bare-symbol expr)))
+                (face (cond
+                        ((and (string-match
+                               "\\_<\\(?:\\(_\\)?%\\([1-9]\\)?\\)\\_>" name)
+                              (or (not fnpos) (match-end 2)))
+                         'llama-mandatory-argument)
+                        ((and (string-match
+                               "\\_<\\(?:\\(_\\)?&\\([1-9*]\\)?\\)\\_>" name)
+                              (or (not fnpos) (match-end 2)))
+                         'llama-optional-argument))))
+             (when (match-end 1)
+               (setq face (list 'llama-deleted-argument face)))
+             (let ((beg (symbol-with-pos-pos expr)))
+               (put-text-property
+                beg (save-excursion (goto-char beg) (forward-symbol 1))
+                'face face)))))
+        ((or (listp expr)
+             (vectorp expr))
+         (let* ((vectorp (vectorp expr))
+                (expr (if vectorp (append expr ()) expr))
+                (fnpos (and (not vectorp)
+                            (not backquoted)
+                            (ignore-errors (length expr)))))
+           (catch t
+             (while t
+               (cond ((eq (car expr) backquote-backquote-symbol)
+                      (setq expr (cdr expr))
+                      (llama--fontify (car expr) t t))
+                     ((llama--fontify (car expr) fnpos backquoted)))
+               (setq fnpos nil)
+               (setq expr (cdr expr))
+               (unless (and expr
+                            (listp expr)
+                            (not (eq (car expr) backquote-unquote-symbol)))
+                 (throw t nil))))
+           (when expr
+             (llama--fontify expr fnpos))))))
   (list expr fnpos backquoted top)) ; Silence compiler.
 
 (defvar llama-fontify-mode-lighter nil)
@@ -427,18 +427,18 @@ expansion, and the looks of this face should hint at that.")
   :lighter llama-fontify-mode-lighter
   :global t
   (cond
-   (llama-fontify-mode
-    (advice-add 'lisp--el-match-keyword :override
-                #'lisp--el-match-keyword@llama '((depth . -80)))
-    (advice-add 'elisp-mode-syntax-propertize :override
-                #'elisp-mode-syntax-propertize@llama)
-    (add-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords))
-   (t
-    (advice-remove 'lisp--el-match-keyword
-                   #'lisp--el-match-keyword@llama)
-    (advice-remove 'elisp-mode-syntax-propertize
-                   #'elisp-mode-syntax-propertize@llama)
-    (remove-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords)))
+    (llama-fontify-mode
+     (advice-add 'lisp--el-match-keyword :override
+                 #'lisp--el-match-keyword@llama '((depth . -80)))
+     (advice-add 'elisp-mode-syntax-propertize :override
+                 #'elisp-mode-syntax-propertize@llama)
+     (add-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords))
+    (t
+     (advice-remove 'lisp--el-match-keyword
+                    #'lisp--el-match-keyword@llama)
+     (advice-remove 'elisp-mode-syntax-propertize
+                    #'elisp-mode-syntax-propertize@llama)
+     (remove-hook 'emacs-lisp-mode-hook #'llama--add-font-lock-keywords)))
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
       (when (derived-mode-p 'emacs-lisp-mode)
