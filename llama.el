@@ -361,7 +361,7 @@ expansion, and the looks of this face should hint at that.")
                  (put-text-property (match-beginning 0) (point)
                                     'font-lock-multiline t)
                  (llama--fontify (cdr expr) nil nil t)))))
-    (list re end))) ; Silence compiler.
+    (progn re end nil))) ; Silence compiler.
 
 (defun llama--fontify (expr &optional fnpos backquoted top)
   (static-if (fboundp 'bare-symbol)
@@ -418,7 +418,7 @@ expansion, and the looks of this face should hint at that.")
                  (throw t nil))))
            (when expr
              (llama--fontify expr fnpos))))))
-  (list expr fnpos backquoted top)) ; Silence compiler.
+  (and expr fnpos backquoted top nil)) ; Silence compiler.
 
 (defvar llama-fontify-mode-lighter nil)
 
