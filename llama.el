@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2020-2026 Jonas Bernoulli
 
-;; Authors: Jonas Bernoulli <emacs.llama@jonas.bernoulli.dev>
+;; Author: Jonas Bernoulli <emacs.llama@jonas.bernoulli.dev>
 ;; Homepage: https://github.com/tarsius/llama
 ;; Keywords: extensions
 
