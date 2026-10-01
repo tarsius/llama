@@ -66,3 +66,10 @@ explicitly specified ~_%3~.
 
 Consider enabling ~llama-fontify-mode~ to highlight ~##~ and its special
 arguments.
+
+#+html: <br><br>
+#+html: <a href="https://github.com/tarsius/llama/actions/workflows/compile.yml"><img alt="Compile" src="https://github.com/tarsius/llama/actions/workflows/compile.yml/badge.svg"/></a>
+#+html: <a href="https://snapshots.melpa.org/#/llama"><img alt="MELPA Snapshots" src="https://snapshots.melpa.org/packages/llama-badge.svg"/></a>
+#+html: <a href="https://releases.melpa.org/#/llama"><img alt="MELPA Releases" src="https://releases.melpa.org/packages/llama-badge.svg"/></a>
+#+html: <a href="https://elpa.nongnu.org/nongnu/llama.html"><img alt="NonGNU ELPA" src="https://emacsair.me/assets/badges/nongnu-elpa.svg"/></a>
+#+html: <a href="https://emacsair.me/human"><img alt="human made" src="https://emacsair.me/assets/badges/human.svg"/></a>
